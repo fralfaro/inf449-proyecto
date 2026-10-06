@@ -1,12 +1,8 @@
 ---
-title: "Estado de avance del proyecto"
-subtitle: "Single Pixel Camera + Gaussian Splatting"
-author: "Francisco Alfaro · Ayrton Perez"
-date: "Octubre 2026"
 lang: es
 format:
   revealjs:
-    theme: default
+    theme: [default, style.scss]
     slide-number: true
     progress: true
     history: false
@@ -17,7 +13,8 @@ format:
     width: 1600
     height: 900
     slide-level: 2
-    footer: "Proyecto INF449 · Estado de avance"
+    title-slide: false
+    footer: "INF449 · SPC + 3D Gaussian Splatting"
     scrollable: false
 execute:
   echo: false
@@ -27,159 +24,465 @@ execute:
 
 ## Estado de avance
 
-### Single Pixel Camera + Gaussian Splatting
+:::: {.title-hero}
+::: {.title-text}
+::: {.eyebrow}
+PROYECTO INF449 · OCTUBRE 2026
+:::
 
-**Proyecto INF449**
+### Comprimir la captura.<br>Reconstruir la escena.
 
-Francisco Alfaro · Ayrton Perez<br>
-Octubre 2026
+**Single Pixel Camera + Gaussian Splatting**
+
+Francisco Alfaro · Ayrton Perez
+:::
+
+```{=html}
+<figure class="title-visual">
+  <div class="gif-box"><img src="images/gaussian_splatting.gif" alt="Animación ilustrativa de una escena reconstruida con Gaussian Splatting"></div>
+  <figcaption class="fig-caption">Render ilustrativo con 3DGS. <span class="fig-source">Fuente: LearnOpenCV, «3D Gaussian Splatting Paper Explanation» (learnopencv.com).</span></figcaption>
+</figure>
+```
+::::
 
 ::: {.notes}
-Presentar brevemente el objetivo del proyecto y aclarar qué partes ya están implementadas y cuáles quedan por ejecutar.
+La pregunta del proyecto es simple: cuánto podemos reducir la información de las vistas sin perder una representación 3D útil. El flujo combina una simulación SPC basada en Hadamard con Gaussian Splatting.
 :::
 
-## 1. Objetivo del proyecto
+## 1. Problema general
 
-Construir un flujo experimental que permita estudiar cómo la compresión de una **Single Pixel Camera (SPC)** afecta la reconstrucción 3D con **Gaussian Splatting**.
+:::: {.columns .problem-slide}
+::: {.column width="42%"}
 
-### Pregunta central
+::: {.eyebrow}
+MOTIVACIÓN
+:::
 
-> ¿Cuánto se puede reducir la información de las imágenes y todavía obtener una representación 3D útil?
+### Menos mediciones,<br>misma escena
 
-### Alcance actual
+Una reconstrucción 3D multivista necesita muchas imágenes y sus poses. En este proyecto simulamos una **Single Pixel Camera (SPC)** para medir qué ocurre cuando solo conservamos una fracción de la información.
 
-- La SPC se simula sobre imágenes RGB existentes.
-- Se utiliza la escena `truck` con imágenes y poses COLMAP.
-- La captura óptica de una cámara single-pixel real queda fuera del alcance de esta etapa.
+::: {.accent-card}
+**Pregunta central**
 
-## 2. Flujo de trabajo propuesto
+¿Cuánto se puede comprimir una vista y todavía obtener un modelo 3D útil?
+:::
 
-```text
-Escena truck
-     ↓
-Imágenes + poses COLMAP
-     ↓
-Medición SPC con patrones Hadamard
-     ↓
-Reconstrucción de imágenes
-     ↓
-Gaussian Splatting
-     ↓
-Renders + métricas + comparación
+<div class="tag-row"><span>Escena objetivo: <code>truck</code> [4]</span><span>251 vistas</span><span>poses COLMAP</span></div>
+:::
+
+::: {.column width="58%"}
+::: {.image-frame .hero-frame}
+![](images/gaussian_splatting.gif){fig-alt="Render animado de una escena 3D"}
+<div class="image-caption">Recurso visual disponible: ejemplo de captura y render 3DGS. La fotografía final de <code>truck</code> se incorporará junto con los renders del piloto. <span class="fig-source">Fuente: LearnOpenCV, «3D Gaussian Splatting Paper Explanation» (learnopencv.com).</span></div>
+:::
+:::
+::::
+
+## 2. ¿Qué es una SPC?
+
+:::: {.columns}
+::: {.column width="56%"}
+
+::: {.eyebrow}
+MODELO DIRECTO
+:::
+
+```{mermaid}
+flowchart LR
+  A[Escena / imagen RGB] --> B[Patrón Hadamard]
+  B --> C[Medición escalar]
+  C --> D[Vector de mediciones y]
+  D --> E[Reconstrucción x-hat]
+  E --> F[Entrada a 3DGS]
 ```
 
-El experimento compara una condición **baseline** con distintas proporciones de mediciones SPC.
+La cámara no registra cada píxel por separado: proyecta la escena sobre patrones y conserva las mediciones resultantes [1].
+:::
 
-## 3. Organización del repositorio
+::: {.column width="44%"}
+::: {.image-frame .spc-frame}
+![](images/spc.png){fig-alt="Diagrama óptico de una Single Pixel Camera"}
+<div class="image-caption">Esquema óptico con apertura codificada y sensor de un píxel. <span class="source-pending">Fuente: por confirmar</span></div>
+:::
 
-| Carpeta | Contenido | Estado |
-|---|---|---|
-| `codes/` | Notebooks y scripts de Colab | Implementado |
-| `slides/` | Presentación Quarto y PDF | Implementado |
-| `codes/01_...` | Simulación SPC y preparación de datos | Implementado |
-| `codes/02_...` | Entrenamiento y evaluación 3DGS | Implementado |
-| `codes/diagnostico_3dgs.ipynb` | Pruebas de entorno y entrenamiento mínimo | Validado |
+::: {.equation-card}
+$$y_k = \langle h_k, x\rangle$$
 
-Los notebooks están separados para que la generación de datos y el entrenamiento 3D puedan ejecutarse de forma independiente.
+Cada medición es un producto interno entre la imagen $x$ y un patrón $h_k$.
+:::
+:::
+::::
 
-## 4. Avance: simulación Single Pixel Camera
+## 3. Hadamard y reconstrucción
 
-### Implementado en `01_single_pixel_camera_colab.ipynb`
-
-- Montaje de Google Drive y descarga del dataset en `/content`.
-- Alineación entre nombres de imágenes y poses COLMAP.
-- Medición mediante una transformación de Hadamard separable.
-- Control del porcentaje de coeficientes conservados.
-- Reconstrucción a `64 × 64` y reescalado a la resolución original.
-- Generación de carpetas compatibles con Gaussian Splatting.
-
-### Condiciones preparadas
-
-`baseline` · `SPC 5%` · `SPC 10%` · `SPC 25%` · `SPC 50%`
-
-## 5. Avance: reconstrucción 3D
-
-### Implementado en `02_gaussian_splatting_colab.ipynb`
-
-1. Copiar las entradas desde Google Drive.
-2. Comprobar imágenes y poses.
-3. Descargar y compilar las extensiones CUDA de 3DGS.
-4. Filtrar las poses para las vistas disponibles.
-5. Entrenar, renderizar y evaluar cada condición.
-6. Consolidar renders y métricas.
-
-El pipeline conserva los resultados en Drive porque el almacenamiento de `/content` es temporal.
-
-## 6. Validación del entorno Colab
-
-La prueba de diagnóstico fue ejecutada correctamente en una **Tesla T4**:
-
-| Componente | Resultado |
-|---|---|
-| GPU | Tesla T4 |
-| VRAM detectada | 14,56 GB |
-| PyTorch / CUDA | 2.6.0+cu124 / CUDA 12.4 |
-| Dataset | 251 imágenes y 251 poses COLMAP |
-| Extensiones 3DGS | `diff_gaussian_rasterization`: OK; `simple_knn`: OK |
-| Entrenamiento mínimo | 10 iteraciones, código de salida 0 |
-
-La prueba confirma que el entorno base está operativo; todavía no representa el resultado final del experimento.
-
-## 7. Primer resultado técnico validado
-
-En el entrenamiento mínimo de diagnóstico se obtuvo:
-
-::: {.columns}
+:::: {.columns}
 ::: {.column width="50%"}
-
-### Test
-
-**PSNR:** 13,72 dB<br>
-**L1:** 0,173
-
+::: {.image-frame .hadamard-frame}
+![](images/Hadamard.png){fig-alt="Patrones de Hadamard y reconstrucción de una imagen"}
+<div class="image-caption">Medición con patrones Hadamard y reconstrucción por transformada inversa (IHT). <span class="source-pending">Fuente: por confirmar</span></div>
+:::
 :::
 
 ::: {.column width="50%"}
+::: {.eyebrow}
+TRANSFORMADA ORTOGONAL
+:::
 
-### Train
+### Medir en una base estructurada
 
-**PSNR:** 13,87 dB<br>
-**L1:** 0,169
+Los patrones de Hadamard son binarios y ortogonales. Con ellos podemos controlar directamente cuántos coeficientes conservar.
 
+::: {.equation-card}
+$$y = S\,H\,x \qquad\qquad \hat{x} = H^{\mathsf T} S^{\mathsf T} y$$
+
+- $H$: base Hadamard normalizada, $H^{\mathsf T}H = I$.
+- $S \in \{0,1\}^{m\times n}$ conserva $m = r\,n$ coeficientes; $S^{\mathsf T}$ pone en cero los descartados.
+- Se conservan los de **menor secuencia** (menos cambios de signo en filas + columnas): las componentes de baja frecuencia.
+:::
+
+::: {.image-frame .small-inset-frame}
+![](images/hadamard2.png){fig-alt="Comparación entre patrones binarios, Hadamard y Fourier"}
+<div class="image-caption">Patrones aleatorios, Hadamard y Fourier. <span class="source-pending">Fuente: por confirmar</span></div>
+:::
+:::
+::::
+
+## 4. Comparación SPC
+
+::: {.eyebrow}
+CONDICIONES DEL EXPERIMENTO
+:::
+
+### De la imagen completa a una fracción de mediciones
+
+<!-- Reemplazar «—» por los valores de PSNR/SSIM al exportar las imágenes. -->
+```{=html}
+<div class="condition-strip">
+  <figure class="condition-card condition-base">
+    <div class="condition-image slot" data-label="BASE"><img src="images/spc/original.png" alt="Vista original de truck" onerror="this.remove()"></div>
+    <figcaption><strong>Original</strong><span>100 % de la vista</span><span class="metric-caption">referencia</span></figcaption>
+  </figure>
+  <figure class="condition-card">
+    <div class="condition-image slot" data-label="SPC 05"><img src="images/spc/spc_05.png" alt="Reconstrucción SPC 5 %" onerror="this.remove()"></div>
+    <figcaption><strong>SPC 5 %</strong><span>piloto pendiente</span><span class="metric-caption">PSNR — dB · SSIM —</span></figcaption>
+  </figure>
+  <figure class="condition-card">
+    <div class="condition-image slot" data-label="SPC 10"><img src="images/spc/spc_10.png" alt="Reconstrucción SPC 10 %" onerror="this.remove()"></div>
+    <figcaption><strong>SPC 10 %</strong><span>piloto pendiente</span><span class="metric-caption">PSNR — dB · SSIM —</span></figcaption>
+  </figure>
+  <figure class="condition-card">
+    <div class="condition-image slot" data-label="SPC 25"><img src="images/spc/spc_25.png" alt="Reconstrucción SPC 25 %" onerror="this.remove()"></div>
+    <figcaption><strong>SPC 25 %</strong><span>condición central</span><span class="metric-caption">PSNR — dB · SSIM —</span></figcaption>
+  </figure>
+  <figure class="condition-card">
+    <div class="condition-image slot" data-label="SPC 50"><img src="images/spc/spc_50.png" alt="Reconstrucción SPC 50 %" onerror="this.remove()"></div>
+    <figcaption><strong>SPC 50 %</strong><span>piloto pendiente</span><span class="metric-caption">PSNR — dB · SSIM —</span></figcaption>
+  </figure>
+</div>
+```
+
+:::: {.columns .comparison-bottom}
+::: {.column width="36%"}
+::: {.image-frame .comparison-reference-frame}
+![](images/Hadamard.png){.comparison-reference fig-alt="Referencia visual del proceso de medición y reconstrucción"}
+<div class="image-caption">Proceso de medición y reconstrucción. <span class="source-pending">Fuente: por confirmar</span></div>
+:::
+:::
+::: {.column width="64%"}
+| Condición | Mediciones | Estado |
+|:--|--:|:--|
+| Baseline | 100 % | entrada original |
+| SPC 5 / 10 / 25 / 50 % | ratio controlado | por ejecutar |
+
+::: {.callout-note}
+La tira representa el diseño experimental. Las cinco imágenes finales y sus métricas se exportarán desde los notebooks al terminar el piloto.
+:::
+:::
+::::
+
+## 5. Gaussian Splatting
+
+:::: {.columns}
+::: {.column width="43%"}
+::: {.eyebrow}
+REPRESENTACIÓN 3D
+:::
+
+### De puntos a gaussianas
+
+Cada primitiva se describe por su posición, forma, orientación, opacidad y color [2]:
+
+::::: {.parameter-grid}
+::: {.param}
+[μ]{.param-symbol} [posición]{.param-label}
+:::
+::: {.param}
+[Σ]{.param-symbol} [covarianza]{.param-label}
+:::
+::: {.param}
+[α]{.param-symbol} [opacidad]{.param-label}
+:::
+::: {.param}
+[c]{.param-symbol} [color]{.param-label}
+:::
+:::::
+
+::: {.gauss-eq}
+$$G(x)=\exp\left(-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)\right)$$
 :::
 :::
 
-Estos valores corresponden a solo 10 iteraciones y sirven como prueba de funcionamiento del pipeline, no como comparación definitiva entre ratios SPC.
+::: {.column width="57%"}
+::: {.image-frame .gaussian-frame}
+![](images/Gaussians.jpeg){fig-alt="Conversión conceptual de nube de puntos a Gaussian Splatting"}
+<div class="image-caption">De nube de puntos a gaussianas 3D (esquema conceptual). <span class="source-pending">Fuente: por confirmar</span></div>
+:::
 
-## 8. Estado actual y dificultades
+::: {.equation-card}
+$$C(p)=\sum_i T_i\,\alpha_i\,c_i, \qquad T_i=\prod_{j<i}(1-\alpha_j)$$
+:::
+:::
+::::
 
-| Área | Estado | Comentario |
-|---|---|---|
-| Preparación del dataset | **Listo** | Escena `truck`, imágenes y poses COLMAP |
-| Simulación SPC | **Listo** | Hadamard y ratios de medición definidos |
-| Integración con Drive | **Listo** | Contrato de carpetas documentado |
-| Entorno T4 + CUDA | **Validado** | Extensiones y entrenamiento mínimo funcionan |
-| Entrenamiento completo | **En curso** | Falta ejecutar todas las condiciones |
-| Comparación final | **Pendiente** | Requiere métricas y renders definitivos |
+## 6. COLMAP
 
-### Dificultades y decisiones técnicas
+::: {.eyebrow}
+GEOMETRÍA MULTIVISTA
+:::
 
-- **Memoria limitada:** se prepararon modos piloto con resolución `256` o menor.
-- **Sesiones temporales de Colab:** los resultados y logs se copian a Drive.
-- **Compatibilidad de poses:** las imágenes mantienen nombres alineados con `images.bin`.
-- **Compilación CUDA:** se agregó un notebook de diagnóstico para detectar errores antes del entrenamiento largo.
-- **Interpretación del experimento:** la SPC representa una degradación/reconstrucción simulada, no una cámara física completa.
+### Cámaras + nube de puntos
 
-## 9. Próximos pasos y cierre
+:::: {.columns .colmap-slide}
+::: {.column width="45%"}
+```{=html}
+<div class="diagram-panel">
+  <div class="camera-orbit">
+    <span class="point-cloud">⋯ ⋅ ⋅ ⋅ ⋅ ⋅ ⋅ ⋯</span>
+    <span class="point-cloud-label">nube de puntos</span>
+    <span class="camera camera-a">CAM 01</span>
+    <span class="camera camera-b">CAM 02</span>
+    <span class="camera camera-c">CAM 03</span>
+    <span class="scene-object">truck</span>
+  </div>
+  <div class="panel-label">Poses estimadas y triangulación (esquema)</div>
+</div>
+```
+:::
+::: {.column width="55%"}
+```{=html}
+<figure class="image-frame colmap-figure">
+  <div class="slot" data-label="images/colmap_cameras.png"><img src="images/colmap_cameras.png" alt="Cámaras y nube dispersa de COLMAP para la escena truck" onerror="this.remove()"></div>
+  <figcaption class="fig-caption">COLMAP [3] entrega intrínsecas, extrínsecas y una nube inicial para comenzar el ajuste. <span class="fig-source">Fuente: elaboración propia sobre <code>truck</code> [4].</span></figcaption>
+</figure>
+```
+:::
+::::
 
-### Próximos pasos
+::: {.callout-note}
+La preparación del proyecto conserva la correspondencia entre cada nombre de imagen y su pose en <code>images.bin</code>.
+:::
 
-1. Ejecutar el piloto con 30 vistas, imágenes `64 × 64` y 1500 iteraciones.
-2. Repetir el entrenamiento para baseline, 5%, 10%, 25% y 50%.
-3. Consolidar PSNR, L1, tiempos y renders comparables.
-4. Analizar la relación entre porcentaje de mediciones y calidad 3D.
-5. Actualizar la presentación con resultados finales.
+## 7. Render 3DGS
 
-### Cierre
+:::: {.columns}
+::: {.column width="62%"}
+::: {.image-frame .gif-frame}
+![](images/gaussian_splatting.gif){fig-alt="Animación del paso desde una nube de puntos a una escena renderizada"}
+<div class="image-caption">De la nube de puntos a la escena renderizada. <span class="fig-source">Fuente: LearnOpenCV, «3D Gaussian Splatting Paper Explanation» (learnopencv.com).</span></div>
+:::
+:::
+::: {.column width="38%"}
+::: {.eyebrow}
+OPTIMIZACIÓN
+:::
 
-El proyecto ya cuenta con un pipeline reproducible y un entorno 3DGS validado en T4. El hito principal pendiente es ejecutar y comparar de forma sistemática todas las condiciones SPC.
+### Original frente a render
+
+El modelo ajusta las gaussianas para que el render desde cada cámara reproduzca las vistas observadas [2].
+
+::: {.equation-card}
+$$L=(1-\lambda)\,L_1+\lambda\,L_{\text{D-SSIM}}, \qquad \lambda = 0{,}2$$
+:::
+
+::: {.metric-row}
+<span class="metric">10 iter.</span><span class="metric-label">diagnóstico de entorno</span>
+:::
+
+La comparación definitiva será entre el baseline y los cuatro ratios SPC.
+:::
+::::
+
+## 8. Baseline frente a SPC
+
+::: {.eyebrow}
+DISEÑO DE LA COMPARACIÓN
+:::
+
+### Misma escena, distinta información
+
+:::: {.columns .three-way}
+::: {.column}
+::: {.step-card .step-neutral}
+<span class="step-number">01</span>
+
+### Baseline
+
+Imágenes RGB originales, poses COLMAP y entrenamiento 3DGS.
+:::
+:::
+::: {.column}
+::: {.step-card .step-accent}
+<span class="step-number">02</span>
+
+### SPC
+
+Mediciones Hadamard → reconstrucción de cada vista → mismas poses → 3DGS.
+:::
+:::
+::: {.column}
+::: {.step-card .step-orange}
+<span class="step-number">03</span>
+
+### Evaluación
+
+PSNR, L1, tiempos de entrenamiento y calidad visual del render.
+:::
+:::
+::::
+
+::: {.callout-large}
+**Lectura:** si la calidad 3D cae poco al reducir las mediciones, la SPC funciona como una compresión útil para el pipeline multivista.
+:::
+
+## 9. Métricas
+
+::: {.eyebrow}
+QUÉ VAMOS A MEDIR
+:::
+
+### Calidad de entrada y calidad 3D
+
+:::: {.columns .metrics-slide}
+::: {.column width="60%"}
+```{=html}
+<div class="chart-grid">
+  <figure class="chart-figure image-frame">
+    <div class="slot" data-label="images/psnr_vs_rate.png"><img src="images/psnr_vs_rate.png" alt="PSNR en función del ratio de mediciones" onerror="this.remove()"></div>
+    <figcaption class="fig-caption">PSNR frente a ratio de mediciones. <span class="fig-source">Fuente: elaboración propia.</span></figcaption>
+  </figure>
+  <figure class="chart-figure image-frame">
+    <div class="slot" data-label="images/training_curve.png"><img src="images/training_curve.png" alt="Curva de entrenamiento de 3DGS" onerror="this.remove()"></div>
+    <figcaption class="fig-caption">Curva de entrenamiento 3DGS. <span class="fig-source">Fuente: elaboración propia.</span></figcaption>
+  </figure>
+</div>
+<p class="metric-legend"><b>PSNR</b>: fidelidad de imagen · <b>L1</b>: error absoluto · <b>SSIM</b> [5]: estructura perceptual · <b>Tiempo</b>: costo computacional</p>
+```
+:::
+::: {.column width="40%"}
+```{=html}
+<table>
+  <thead><tr><th>Condición</th><th>PSNR (dB)</th><th>SSIM</th><th>L1</th><th>Tiempo</th></tr></thead>
+  <tbody>
+    <tr><td>Baseline</td><td class="pending">pendiente</td><td class="pending">pendiente</td><td class="pending">pendiente</td><td class="pending">pendiente</td></tr>
+    <tr><td>SPC 5 %</td><td class="pending">pendiente</td><td class="pending">pendiente</td><td class="pending">pendiente</td><td class="pending">pendiente</td></tr>
+    <tr><td>SPC 10 %</td><td class="pending">pendiente</td><td class="pending">pendiente</td><td class="pending">pendiente</td><td class="pending">pendiente</td></tr>
+    <tr><td>SPC 25 %</td><td class="pending">pendiente</td><td class="pending">pendiente</td><td class="pending">pendiente</td><td class="pending">pendiente</td></tr>
+    <tr><td>SPC 50 %</td><td class="pending">pendiente</td><td class="pending">pendiente</td><td class="pending">pendiente</td><td class="pending">pendiente</td></tr>
+  </tbody>
+</table>
+```
+
+::: {.callout-note}
+**Diagnóstico inicial (10 iteraciones):** PSNR test 13,72 dB · PSNR train 13,87 dB. Son solo valores de diagnóstico; no son el resultado final del experimento.
+:::
+:::
+::::
+
+## 10. Estado del proyecto
+
+::: {.eyebrow}
+AVANCE A LA FECHA
+:::
+
+::::: {.status-grid}
+:::: {.status-card .status-done}
+[✓ Hecho]{.status-title}
+
+- Simulación SPC con patrones Hadamard implementada en notebook.
+- Pipeline reproducible y entorno T4 validado.
+- Correspondencia imagen ↔ pose en <code>images.bin</code>.
+- Diagnóstico 3DGS de 10 iteraciones (PSNR test 13,72 dB).
+::::
+
+:::: {.status-card .status-progress}
+[◐ En curso]{.status-title}
+
+- Piloto de 30 vistas a `64 × 64`.
+- Validación del contrato de carpetas.
+::::
+
+:::: {.status-card .status-pending}
+[○ Pendiente]{.status-title}
+
+- Entrenar baseline, 5 %, 10 %, 25 % y 50 % con la misma configuración.
+- Consolidar renders, PSNR, L1, SSIM y tiempos.
+- Insertar las cinco imágenes y los gráficos finales.
+- Analizar el equilibrio entre compresión y calidad 3D.
+::::
+:::::
+
+## 11. Próximos pasos
+
+:::: {.columns}
+::: {.column width="58%"}
+::: {.eyebrow}
+PLAN DE CIERRE
+:::
+
+### Del piloto a la comparación final
+
+1. Ejecutar 30 vistas a `64 × 64` y validar el contrato de carpetas.
+2. Entrenar baseline, 5 %, 10 %, 25 % y 50 % con la misma configuración.
+3. Consolidar renders, PSNR, L1, SSIM y tiempos.
+4. Insertar en la presentación las cinco imágenes y los gráficos finales.
+5. Analizar el punto de equilibrio entre compresión y calidad 3D.
+:::
+
+::: {.column width="42%"}
+::: {.link-panel}
+<div class="link-heading">Recursos</div>
+
+- [Código y notebooks](https://github.com/fralfaro/inf449-proyecto/tree/main/codes)
+- [Notebook SPC](https://github.com/fralfaro/inf449-proyecto/blob/main/codes/01_single_pixel_camera_colab.ipynb)
+- [Notebook 3DGS](https://github.com/fralfaro/inf449-proyecto/blob/main/codes/02_gaussian_splatting_colab.ipynb)
+- [Repositorio oficial 3DGS](https://github.com/graphdeco-inria/gaussian-splatting)
+
+::: {.accent-card}
+**Hito actual**
+
+Pipeline reproducible y entorno T4 validado. Falta ejecutar la comparación sistemática.
+:::
+:::
+:::
+::::
+
+::: {.closing-line}
+**Objetivo:** medir cuánto podemos comprimir sin perder la escena.
+:::
+
+## Referencias
+
+::: {.references}
+**[1]** M. F. Duarte, M. A. Davenport, D. Takhar, J. N. Laska, T. Sun, K. F. Kelly y R. G. Baraniuk. *Single-pixel imaging via compressive sampling.* IEEE Signal Processing Magazine, 25(2), 2008. [doi:10.1109/MSP.2007.914730](https://doi.org/10.1109/MSP.2007.914730)
+
+**[2]** B. Kerbl, G. Kopanas, T. Leimkühler y G. Drettakis. *3D Gaussian Splatting for Real-Time Radiance Field Rendering.* ACM Transactions on Graphics, 42(4), 2023. [doi:10.1145/3592433](https://doi.org/10.1145/3592433)
+
+**[3]** J. L. Schönberger y J.-M. Frahm. *Structure-from-Motion Revisited.* CVPR, 2016. [doi:10.1109/CVPR.2016.445](https://doi.org/10.1109/CVPR.2016.445)
+
+**[4]** A. Knapitsch, J. Park, Q.-Y. Zhou y V. Koltun. *Tanks and Temples: Benchmarking Large-Scale Scene Reconstruction.* ACM Transactions on Graphics, 36(4), 2017. [doi:10.1145/3072959.3073599](https://doi.org/10.1145/3072959.3073599)
+
+**[5]** Z. Wang, A. C. Bovik, H. R. Sheikh y E. P. Simoncelli. *Image Quality Assessment: From Error Visibility to Structural Similarity.* IEEE Transactions on Image Processing, 13(4), 2004. [doi:10.1109/TIP.2003.819861](https://doi.org/10.1109/TIP.2003.819861)
+
+**Figuras de terceros:** las marcadas «Fuente: por confirmar» deben completarse con su origen antes de presentar.
+:::
