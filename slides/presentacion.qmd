@@ -1,0 +1,185 @@
+---
+title: "Estado de avance del proyecto"
+subtitle: "Single Pixel Camera + Gaussian Splatting"
+author: "Francisco Alfaro · Ayrton Perez"
+date: "Octubre 2026"
+lang: es
+format:
+  revealjs:
+    theme: default
+    slide-number: true
+    progress: true
+    history: false
+    transition: fade
+    transition-speed: fast
+    incremental: false
+    fig-align: center
+    width: 1600
+    height: 900
+    slide-level: 2
+    footer: "Proyecto INF449 · Estado de avance"
+    scrollable: false
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Estado de avance
+
+### Single Pixel Camera + Gaussian Splatting
+
+**Proyecto INF449**
+
+Francisco Alfaro · Ayrton Perez<br>
+Octubre 2026
+
+::: {.notes}
+Presentar brevemente el objetivo del proyecto y aclarar qué partes ya están implementadas y cuáles quedan por ejecutar.
+:::
+
+## 1. Objetivo del proyecto
+
+Construir un flujo experimental que permita estudiar cómo la compresión de una **Single Pixel Camera (SPC)** afecta la reconstrucción 3D con **Gaussian Splatting**.
+
+### Pregunta central
+
+> ¿Cuánto se puede reducir la información de las imágenes y todavía obtener una representación 3D útil?
+
+### Alcance actual
+
+- La SPC se simula sobre imágenes RGB existentes.
+- Se utiliza la escena `truck` con imágenes y poses COLMAP.
+- La captura óptica de una cámara single-pixel real queda fuera del alcance de esta etapa.
+
+## 2. Flujo de trabajo propuesto
+
+```text
+Escena truck
+     ↓
+Imágenes + poses COLMAP
+     ↓
+Medición SPC con patrones Hadamard
+     ↓
+Reconstrucción de imágenes
+     ↓
+Gaussian Splatting
+     ↓
+Renders + métricas + comparación
+```
+
+El experimento compara una condición **baseline** con distintas proporciones de mediciones SPC.
+
+## 3. Organización del repositorio
+
+| Carpeta | Contenido | Estado |
+|---|---|---|
+| `codes/` | Notebooks y scripts de Colab | Implementado |
+| `slides/` | Presentación Quarto y PDF | Implementado |
+| `codes/01_...` | Simulación SPC y preparación de datos | Implementado |
+| `codes/02_...` | Entrenamiento y evaluación 3DGS | Implementado |
+| `codes/diagnostico_3dgs.ipynb` | Pruebas de entorno y entrenamiento mínimo | Validado |
+
+Los notebooks están separados para que la generación de datos y el entrenamiento 3D puedan ejecutarse de forma independiente.
+
+## 4. Avance: simulación Single Pixel Camera
+
+### Implementado en `01_single_pixel_camera_colab.ipynb`
+
+- Montaje de Google Drive y descarga del dataset en `/content`.
+- Alineación entre nombres de imágenes y poses COLMAP.
+- Medición mediante una transformación de Hadamard separable.
+- Control del porcentaje de coeficientes conservados.
+- Reconstrucción a `64 × 64` y reescalado a la resolución original.
+- Generación de carpetas compatibles con Gaussian Splatting.
+
+### Condiciones preparadas
+
+`baseline` · `SPC 5%` · `SPC 10%` · `SPC 25%` · `SPC 50%`
+
+## 5. Avance: reconstrucción 3D
+
+### Implementado en `02_gaussian_splatting_colab.ipynb`
+
+1. Copiar las entradas desde Google Drive.
+2. Comprobar imágenes y poses.
+3. Descargar y compilar las extensiones CUDA de 3DGS.
+4. Filtrar las poses para las vistas disponibles.
+5. Entrenar, renderizar y evaluar cada condición.
+6. Consolidar renders y métricas.
+
+El pipeline conserva los resultados en Drive porque el almacenamiento de `/content` es temporal.
+
+## 6. Validación del entorno Colab
+
+La prueba de diagnóstico fue ejecutada correctamente en una **Tesla T4**:
+
+| Componente | Resultado |
+|---|---|
+| GPU | Tesla T4 |
+| VRAM detectada | 14,56 GB |
+| PyTorch / CUDA | 2.6.0+cu124 / CUDA 12.4 |
+| Dataset | 251 imágenes y 251 poses COLMAP |
+| Extensiones 3DGS | `diff_gaussian_rasterization`: OK; `simple_knn`: OK |
+| Entrenamiento mínimo | 10 iteraciones, código de salida 0 |
+
+La prueba confirma que el entorno base está operativo; todavía no representa el resultado final del experimento.
+
+## 7. Primer resultado técnico validado
+
+En el entrenamiento mínimo de diagnóstico se obtuvo:
+
+::: {.columns}
+::: {.column width="50%"}
+
+### Test
+
+**PSNR:** 13,72 dB<br>
+**L1:** 0,173
+
+:::
+
+::: {.column width="50%"}
+
+### Train
+
+**PSNR:** 13,87 dB<br>
+**L1:** 0,169
+
+:::
+:::
+
+Estos valores corresponden a solo 10 iteraciones y sirven como prueba de funcionamiento del pipeline, no como comparación definitiva entre ratios SPC.
+
+## 8. Estado actual y dificultades
+
+| Área | Estado | Comentario |
+|---|---|---|
+| Preparación del dataset | **Listo** | Escena `truck`, imágenes y poses COLMAP |
+| Simulación SPC | **Listo** | Hadamard y ratios de medición definidos |
+| Integración con Drive | **Listo** | Contrato de carpetas documentado |
+| Entorno T4 + CUDA | **Validado** | Extensiones y entrenamiento mínimo funcionan |
+| Entrenamiento completo | **En curso** | Falta ejecutar todas las condiciones |
+| Comparación final | **Pendiente** | Requiere métricas y renders definitivos |
+
+### Dificultades y decisiones técnicas
+
+- **Memoria limitada:** se prepararon modos piloto con resolución `256` o menor.
+- **Sesiones temporales de Colab:** los resultados y logs se copian a Drive.
+- **Compatibilidad de poses:** las imágenes mantienen nombres alineados con `images.bin`.
+- **Compilación CUDA:** se agregó un notebook de diagnóstico para detectar errores antes del entrenamiento largo.
+- **Interpretación del experimento:** la SPC representa una degradación/reconstrucción simulada, no una cámara física completa.
+
+## 9. Próximos pasos y cierre
+
+### Próximos pasos
+
+1. Ejecutar el piloto con 30 vistas, imágenes `64 × 64` y 1500 iteraciones.
+2. Repetir el entrenamiento para baseline, 5%, 10%, 25% y 50%.
+3. Consolidar PSNR, L1, tiempos y renders comparables.
+4. Analizar la relación entre porcentaje de mediciones y calidad 3D.
+5. Actualizar la presentación con resultados finales.
+
+### Cierre
+
+El proyecto ya cuenta con un pipeline reproducible y un entorno 3DGS validado en T4. El hito principal pendiente es ejecutar y comparar de forma sistemática todas las condiciones SPC.

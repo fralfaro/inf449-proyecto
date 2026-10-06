@@ -1,0 +1,93 @@
+/*-- scss:defaults --*/
+@import "../python-datos/custom.scss";
+
+$accent-green: #27AE60;
+$accent-orange: #F39C12;
+
+/*-- scss:rules --*/
+
+// Mermaid mide las cajas en sans-serif; el tema base usa Georgia.
+// Sin esta variable el texto se sale de los nodos.
+:root,
+.reveal {
+  --mermaid-font-family: "trebuchet ms", verdana, arial, sans-serif;
+}
+
+// === CUADROS INFORMATIVOS ===
+.info-box {
+  background: linear-gradient(135deg, rgba(15, 32, 68, 0.08) 0%, rgba(74, 159, 212, 0.12) 100%);
+  border-left: 5px solid $accent;
+  border-radius: 6px;
+  padding: 0.7em 1em;
+  margin: 0.6em 0;
+  font-size: 0.82em;
+}
+
+// === ECUACIONES DESTACADAS ===
+.equation-highlight {
+  background-color: #F5F7FA;
+  border: 1px solid #D5DCE4;
+  border-radius: 6px;
+  padding: 0.4em 1em;
+  margin: 0.5em 0;
+}
+
+// === TARJETAS DE CONTRIBUCIÓN ===
+.pillar {
+  border-radius: 8px;
+  padding: 0.8em 0.9em;
+  height: 330px;
+  font-size: 0.78em;
+}
+
+// Solo el primer párrafo es el título de la tarjeta; el resto de los
+// <strong> deben seguir siendo inline.
+.pillar > p:first-child > strong {
+  display: block;
+  color: $primary;
+  font-size: 1.15em;
+  margin-bottom: 0.4em;
+}
+
+.pillar-a { background: #EBF4FB; border-top: 5px solid $accent; }
+.pillar-b { background: #EAFAF1; border-top: 5px solid $accent-green; }
+.pillar-c { background: #FFF7E6; border-top: 5px solid $accent-orange; }
+
+// === ÉNFASIS ===
+.emphasis {
+  color: $accent;
+  font-weight: bold;
+}
+
+.metric {
+  display: block;
+  text-align: center;
+  color: $primary;
+  font-size: 1.6em;
+  font-weight: bold;
+  line-height: 1.1;
+}
+
+.metric-label {
+  display: block;
+  text-align: center;
+  color: $muted;
+  font-size: 0.75em;
+}
+
+// Fila de resultados destacados
+.metric-row {
+  background: #F5F7FA;
+  border-radius: 8px;
+  padding: 0.7em 0.5em;
+}
+
+// La tabla de resultados es ancha: algo más compacta que la base
+.reveal table {
+  font-size: 0.68em;
+}
+
+.reveal table td,
+.reveal table th {
+  padding: 0.3em 0.5em;
+}
