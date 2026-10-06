@@ -210,6 +210,7 @@ $fs-table: 21px;
 
 .hero-frame img { max-height: 560px; }
 .spc-frame img { max-height: 400px; }
+.notebook-wide-frame img { max-height: 330px; }
 .hadamard-frame img { max-height: 640px; }
 .gaussian-frame img { max-height: 470px; }
 .reveal .gauss-eq { font-size: 1.15em; margin-top: 0.8em; }
@@ -429,6 +430,7 @@ $fs-table: 21px;
 .panel-label { color: rgba(255,255,255,0.85); font-size: $fs-small; padding: 0.5em 0.2em 0.1em; }
 
 .colmap-figure .slot { height: 400px; }
+.colmap-figure > img { height: 400px; max-height: 400px; object-fit: cover; width: 100%; }
 
 // === BASELINE / SPC ===
 .reveal .three-way { display: grid; gap: 0.8em; grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -445,6 +447,8 @@ $fs-table: 21px;
 // === MÉTRICAS ===
 .chart-grid { display: grid; gap: 0.5em; grid-template-columns: 1fr 1fr; }
 .chart-figure { margin: 0; }
+.chart-wide { grid-column: 1 / -1; }
+.chart-wide img { max-height: 390px; object-fit: contain; width: 100%; }
 .chart-figure .slot { height: 480px; }
 .metric-legend { color: $muted; font-size: $fs-small; margin-top: 0.5em; }
 .metric-legend b { color: $primary; }
