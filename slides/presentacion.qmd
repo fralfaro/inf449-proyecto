@@ -449,12 +449,15 @@ PLAN DE CIERRE
 
 ::: {.column width="42%"}
 ::: {.link-panel}
-<div class="link-heading">Recursos</div>
 
-- [Código y notebooks](https://github.com/fralfaro/inf449-proyecto/tree/main/codes)
-- [Notebook SPC](https://github.com/fralfaro/inf449-proyecto/blob/main/codes/01_single_pixel_camera_colab.ipynb)
-- [Notebook 3DGS](https://github.com/fralfaro/inf449-proyecto/blob/main/codes/02_gaussian_splatting_colab.ipynb)
-- [Repositorio oficial 3DGS](https://github.com/graphdeco-inria/gaussian-splatting)
+<br>
+
+<div class="link-heading">Código, notebooks y referencias</div>
+
+- [Código y notebooks · repositorio Github](https://github.com/fralfaro/inf449-proyecto/)
+- [Página oficial de 3D Gaussian Splatting](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/)
+- [Repositorio oficial en GitHub](https://github.com/graphdeco-inria/gaussian-splatting)
+- [Paper de 3D Gaussian Splatting](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/3d_gaussian_splatting_high.pdf)
 
 ::: {.accent-card}
 **Hito actual**
