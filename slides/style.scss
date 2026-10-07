@@ -219,6 +219,10 @@ $fs-table: 21px;
 .small-inset-frame { margin-top: 0.5em; padding: 0.25em; }
 .small-inset-frame img { max-height: 170px; object-fit: contain; }
 
+.render-slide .gif-frame img { max-height: 350px; }
+.render-slide .metric-frame { margin-top: 0.6em; padding: 0.25em; }
+.render-slide .metric-frame img { max-height: 250px; object-fit: contain; width: 100%; }
+
 .reveal .problem-slide,
 .reveal .colmap-slide { align-items: center; }
 

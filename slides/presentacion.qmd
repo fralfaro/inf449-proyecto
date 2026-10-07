@@ -287,14 +287,22 @@ La preparación del proyecto conserva la correspondencia entre cada nombre de im
 
 ## 7. Render 3DGS
 
-:::: {.columns}
-::: {.column width="62%"}
+:::: {.columns .render-slide}
+::: {.column width="58%"}
 ::: {.image-frame .gif-frame}
 ![](images/gaussian_splatting.gif){fig-alt="Animación del paso desde una nube de puntos a una escena renderizada"}
 <div class="image-caption">De la nube de puntos a la escena renderizada. <span class="fig-source">Fuente: LearnOpenCV, «3D Gaussian Splatting Paper Explanation» (learnopencv.com).</span></div>
 :::
+
+::: {.callout-note}
+**Paper base:** *3D Gaussian Splatting for Real-Time Radiance Field Rendering* — SIGGRAPH 2023, ACM Transactions on Graphics.  
+Bernhard Kerbl, Georgios Kopanas, Thomas Leimkühler y George Drettakis.  
+[Leer el paper](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/3d_gaussian_splatting_high.pdf)
 :::
-::: {.column width="38%"}
+
+
+:::
+::: {.column width="42%"}
 ::: {.eyebrow}
 OPTIMIZACIÓN
 :::
@@ -307,11 +315,10 @@ El modelo ajusta las gaussianas para que el render desde cada cámara reproduzca
 $$L=(1-\lambda)\,L_1+\lambda\,L_{\text{D-SSIM}}, \qquad \lambda = 0{,}2$$
 :::
 
-::: {.metric-row}
-<span class="metric">3D pendiente</span><span class="metric-label">faltan train, render y metrics válidos</span>
-:::
 
-La comparación definitiva será entre el baseline y los cuatro ratios SPC. El notebook todavía no tiene renders 3DGS válidos para mostrar.
+::: {.image-frame .metric-frame}
+![](images/metricas.png){fig-alt="Comparación de métricas SSIM y PSNR entre modelos 3D"}
+:::
 :::
 ::::
 
