@@ -39,7 +39,7 @@
     "href": "slides/presentacion.html#gaussian-splatting",
     "title": "Proyecto INF449",
     "section": "5. Gaussian Splatting",
-    "text": "5. Gaussian Splatting\n\n\n\nREPRESENTACIÓN 3D\n\nDe puntos a gaussianas\nCada primitiva se describe por su posición, forma, orientación, opacidad y color [2]:\n\n\nμ posición\n\n\nΣ covarianza\n\n\nα opacidad\n\n\nc color\n\n\n\n\\[G(x)=\\exp\\left(-\\frac{1}{2}(x-\\mu)^T\\Sigma^{-1}(x-\\mu)\\right)\\]\n\n\n\n\n\nDe nube de puntos a gaussianas 3D (esquema conceptual). Verificar origen/licencia antes de presentar.\n\n\n\n\\[C(p)=\\sum_i T_i\\,\\alpha_i\\,c_i, \\qquad T_i=\\prod_{j&lt;i}(1-\\alpha_j)\\]"
+    "text": "5. Gaussian Splatting\n\n\n\nREPRESENTACIÓN 3D\n\nDe puntos a gaussianas\nCada primitiva se describe por su posición, forma, orientación, opacidad y color [2]:\n\n\nμ posición\n\n\nΣ covarianza\n\n\nα opacidad\n\n\nc color\n\n\n\n\\[G(x)=\\exp\\left(-\\frac{1}{2}(x-\\mu)^T\\Sigma^{-1}(x-\\mu)\\right)\\]\n\n\n\n\n\nDe nube de puntos a gaussianas 3D (esquema conceptual).\n\n\n\n\\[C(p)=\\sum_i T_i\\,\\alpha_i\\,c_i, \\qquad T_i=\\prod_{j&lt;i}(1-\\alpha_j)\\]"
   },
   {
     "objectID": "slides/presentacion.html#colmap",
