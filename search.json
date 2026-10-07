@@ -1,0 +1,107 @@
+[
+  {
+    "objectID": "slides/presentacion.html#estado-de-avance",
+    "href": "slides/presentacion.html#estado-de-avance",
+    "title": "Proyecto INF449",
+    "section": "Estado de avance",
+    "text": "Estado de avance\n\n\n\nPROYECTO INF449 · OCTUBRE 2026\n\nComprimir la captura.Reconstruir la escena.\nSingle Pixel Camera + Gaussian Splatting\nFrancisco Alfaro · Ayrton Perez\n\n\n  \n  Render ilustrativo con 3DGS. Fuente: LearnOpenCV, «3D Gaussian Splatting Paper Explanation» (learnopencv.com).\n\n\n\nLa pregunta del proyecto es simple: cuánto podemos reducir la información de las vistas sin perder una representación 3D útil. El flujo combina una simulación SPC basada en Hadamard con Gaussian Splatting."
+  },
+  {
+    "objectID": "slides/presentacion.html#problema-general",
+    "href": "slides/presentacion.html#problema-general",
+    "title": "Proyecto INF449",
+    "section": "1. Problema general",
+    "text": "1. Problema general\n\n\n\nMOTIVACIÓN\n\nMenos mediciones,misma escena\nUna reconstrucción 3D multivista necesita muchas imágenes y sus poses. En este proyecto simulamos una Single Pixel Camera (SPC) para medir qué ocurre cuando solo conservamos una fracción de la información.\n\nPregunta central\n¿Cuánto se puede comprimir una vista y todavía obtener un modelo 3D útil?\n\n\nEscena objetivo: truck [4]251 vistasposes COLMAP\n\n\n\n\n\nVista de referencia de truck, la misma que sigue el notebook a través del pipeline. Fuente: dataset Tanks and Temples [4], exportación propia."
+  },
+  {
+    "objectID": "slides/presentacion.html#qué-es-una-spc",
+    "href": "slides/presentacion.html#qué-es-una-spc",
+    "title": "Proyecto INF449",
+    "section": "2. ¿Qué es una SPC?",
+    "text": "2. ¿Qué es una SPC?\n\n\n\nMODELO DIRECTO\n\n\n\n\n\n\nflowchart LR\n  A[Escena / imagen RGB] --&gt; B[Patrón Hadamard]\n  B --&gt; C[Medición escalar]\n  C --&gt; D[Vector de mediciones y]\n  D --&gt; E[Reconstrucción x-hat]\n  E --&gt; F[Entrada a 3DGS]\n\n\n\n\n\n\nLa cámara no registra cada píxel por separado: proyecta la escena sobre patrones y conserva las mediciones resultantes [1].\n\n\n\n\nSalida de codes/notebook.ipynb: patrones, medición escalar y reconstrucción 2D. Es una simulación matemática, no un montaje óptico físico. Fuente: elaboración propia.\n\n\n\n\\[y_k = \\langle h_k, x\\rangle\\]\nCada medición es un producto interno entre la imagen \\(x\\) y un patrón \\(h_k\\)."
+  },
+  {
+    "objectID": "slides/presentacion.html#hadamard-y-reconstrucción",
+    "href": "slides/presentacion.html#hadamard-y-reconstrucción",
+    "title": "Proyecto INF449",
+    "section": "3. Hadamard y reconstrucción",
+    "text": "3. Hadamard y reconstrucción\n\n\n\n\n\nResultado preliminar en una vista: al aumentar el ratio, mejoran PSNR y SSIM. Fuente: elaboración propia, notebook.\n\n\n\n\nTRANSFORMADA ORTOGONAL\n\nMedir en una base estructurada\nLos patrones de Hadamard son binarios y ortogonales. Con ellos podemos controlar directamente cuántos coeficientes conservar.\n\n\\[y = S\\,H\\,x \\qquad\\qquad \\hat{x} = H^{\\mathsf T} S^{\\mathsf T} y\\]\n\n\\(H\\): base Hadamard normalizada, \\(H^{\\mathsf T}H = I\\).\n\\(S \\in \\{0,1\\}^{m\\times n}\\) conserva \\(m = r\\,n\\) coeficientes; \\(S^{\\mathsf T}\\) pone en cero los descartados.\nSe conservan los de menor secuencia (menos cambios de signo en filas + columnas): las componentes de baja frecuencia.\n\n\n\n\n\nLa simulación trabaja a 64 × 64 y luego reescala para conservar la resolución compatible con las poses. Fuente: elaboración propia, notebook."
+  },
+  {
+    "objectID": "slides/presentacion.html#comparación-spc",
+    "href": "slides/presentacion.html#comparación-spc",
+    "title": "Proyecto INF449",
+    "section": "4. Comparación SPC",
+    "text": "4. Comparación SPC\n\nPILOTO 2D · 30 VISTAS\n\nDe la imagen completa a una fracción de mediciones\nEl piloto 2D ya permite mostrar una vista de cada ratio. Los valores de abajo son el promedio sobre 30 vistas; todavía no son métricas de la escena 3D.\n\n\n  \n    \n    Originalreferencia RGBsin compresión\n  \n  \n    \n    SPC 5 %30 vistas16,48 dB · 0,429\n  \n  \n    \n    SPC 10 %30 vistas17,30 dB · 0,434\n  \n  \n    \n    SPC 25 %30 vistas18,54 dB · 0,457\n  \n  \n    \n    SPC 50 %30 vistas19,70 dB · 0,494\n  \n\n\n\n\n\n\nPromedios y desviación estándar sobre 30 vistas. Fuente: elaboración propia, notebook.\n\n\n\n\n\n\nCondición\nMediciones\nEstado\n\n\n\n\nBaseline\n100 %\nentrada original\n\n\nSPC 5 / 10 / 25 / 50 %\nratio controlado\n30 vistas procesadas\n\n\n\n\n\n\n\n\n\nNota\n\n\nLa tira ya documenta el piloto 2D. Falta repetir el recorrido completo en 3DGS y comparar los renders contra la referencia original."
+  },
+  {
+    "objectID": "slides/presentacion.html#gaussian-splatting",
+    "href": "slides/presentacion.html#gaussian-splatting",
+    "title": "Proyecto INF449",
+    "section": "5. Gaussian Splatting",
+    "text": "5. Gaussian Splatting\n\n\n\nREPRESENTACIÓN 3D\n\nDe puntos a gaussianas\nCada primitiva se describe por su posición, forma, orientación, opacidad y color [2]:\n\n\nμ posición\n\n\nΣ covarianza\n\n\nα opacidad\n\n\nc color\n\n\n\n\\[G(x)=\\exp\\left(-\\frac{1}{2}(x-\\mu)^T\\Sigma^{-1}(x-\\mu)\\right)\\]\n\n\n\n\n\nDe nube de puntos a gaussianas 3D (esquema conceptual). Verificar origen/licencia antes de presentar.\n\n\n\n\\[C(p)=\\sum_i T_i\\,\\alpha_i\\,c_i, \\qquad T_i=\\prod_{j&lt;i}(1-\\alpha_j)\\]"
+  },
+  {
+    "objectID": "slides/presentacion.html#colmap",
+    "href": "slides/presentacion.html#colmap",
+    "title": "Proyecto INF449",
+    "section": "6. COLMAP",
+    "text": "6. COLMAP\n\nGEOMETRÍA MULTIVISTA\n\nCámaras + nube de puntos\n\n\n\n  \n    ⋯ ⋅ ⋅ ⋅ ⋅ ⋅ ⋅ ⋯\n    nube de puntos\n    CAM 01\n    CAM 02\n    CAM 03\n    truck\n  \n  Poses estimadas y triangulación (esquema)\n\n\n\n  \n  La vista real pertenece a truck; sus poses se conservan desde COLMAP para todas las condiciones. Fuente: dataset [4], exportación propia.\n\n\n\n\n\n\n\n\nNota\n\n\nLa preparación del proyecto conserva la correspondencia entre cada nombre de imagen y su pose en images.bin."
+  },
+  {
+    "objectID": "slides/presentacion.html#render-3dgs",
+    "href": "slides/presentacion.html#render-3dgs",
+    "title": "Proyecto INF449",
+    "section": "7. Render 3DGS",
+    "text": "7. Render 3DGS\n\n\n\n\n\nDe la nube de puntos a la escena renderizada. Fuente: LearnOpenCV, «3D Gaussian Splatting Paper Explanation» (learnopencv.com).\n\n\n\n\nOPTIMIZACIÓN\n\nOriginal frente a render\nEl modelo ajusta las gaussianas para que el render desde cada cámara reproduzca las vistas observadas [2].\n\n\\[L=(1-\\lambda)\\,L_1+\\lambda\\,L_{\\text{D-SSIM}}, \\qquad \\lambda = 0{,}2\\]\n\n\n3D pendientefaltan train, render y metrics válidos\n\nLa comparación definitiva será entre el baseline y los cuatro ratios SPC. El notebook todavía no tiene renders 3DGS válidos para mostrar."
+  },
+  {
+    "objectID": "slides/presentacion.html#baseline-frente-a-spc",
+    "href": "slides/presentacion.html#baseline-frente-a-spc",
+    "title": "Proyecto INF449",
+    "section": "8. Baseline frente a SPC",
+    "text": "8. Baseline frente a SPC\n\nDISEÑO DE LA COMPARACIÓN\n\nMisma escena, distinta información\n\n\n\n01\nBaseline\nImágenes RGB originales, poses COLMAP y entrenamiento 3DGS.\n\n\n\n02\nSPC\nMediciones Hadamard → reconstrucción de cada vista → mismas poses → 3DGS.\n\n\n\n03\nEvaluación\nPSNR, L1, tiempos de entrenamiento y calidad visual del render.\n\n\n\nLectura: si la calidad 3D cae poco al reducir las mediciones, la SPC funciona como una compresión útil para el pipeline multivista."
+  },
+  {
+    "objectID": "slides/presentacion.html#métricas",
+    "href": "slides/presentacion.html#métricas",
+    "title": "Proyecto INF449",
+    "section": "9. Métricas",
+    "text": "9. Métricas\n\nQUÉ VAMOS A MEDIR\n\nCalidad de entrada y calidad 3D\n\n\n\n  \n    \n    Resultado disponible: métricas 2D promedio sobre 30 vistas. Fuente: elaboración propia, notebook.\n  \n\nPSNR: fidelidad de imagen · L1: error absoluto · SSIM [5]: estructura perceptual · Tiempo: costo computacional\n\n\n\n\nCondición\nPSNR (dB)\nSSIM\nL1\nTiempo\n\n\n\n\nBaseline\n—\n—\n—\n—\n\n\nSPC 5 %\n16,48\n0,429\n—\n2D\n\n\nSPC 10 %\n17,30\n0,434\n—\n2D\n\n\nSPC 25 %\n18,54\n0,457\n—\n2D\n\n\nSPC 50 %\n19,70\n0,494\n—\n2D\n\n\n\n\n\n\n\n\n\nNota\n\n\nLectura: el piloto 2D mejora de forma monotónica con más mediciones. La tabla 3D (PSNR/SSIM/LPIPS y tiempos) sigue pendiente porque OE4 no generó renders evaluables."
+  },
+  {
+    "objectID": "slides/presentacion.html#estado-del-proyecto",
+    "href": "slides/presentacion.html#estado-del-proyecto",
+    "title": "Proyecto INF449",
+    "section": "10. Estado del proyecto",
+    "text": "10. Estado del proyecto\n\nAVANCE A LA FECHA\n\n\n\n✓ Hecho\n\nSimulación SPC con patrones Hadamard implementada en notebook.\nPipeline 2D reproducible y 30 vistas procesadas.\nCorrespondencia imagen ↔︎ pose en images.bin.\nResolución de trabajo 64 × 64 y reescalado compatible con las poses.\n\n\n\n◐ En curso\n\nPreparar el repositorio 3DGS en la VM (la inicialización falló en la última corrida).\nRepetir el piloto 3D con baseline y spc_025.\n\n\n\n○ Pendiente\n\nEjecutar train.py, render.py y metrics.py para baseline y ratios SPC.\nValidar test/ours_&lt;iter&gt;/{renders,gt}, results.json y logs.\nRecién después, completar PSNR, SSIM, LPIPS y tiempos 3D.\nInsertar renders, gráficos 3D y análisis final."
+  },
+  {
+    "objectID": "slides/presentacion.html#próximos-pasos",
+    "href": "slides/presentacion.html#próximos-pasos",
+    "title": "Proyecto INF449",
+    "section": "11. Próximos pasos",
+    "text": "11. Próximos pasos\n\n\n\nPLAN DE CIERRE\n\nDel piloto a la comparación final\n\nReparar la inicialización del repositorio 3DGS y confirmar que train.py arranca.\nRepetir primero el piloto con baseline y spc_025; no pasar a FULL sin aprobarlo.\nEjecutar baseline, 5 %, 10 %, 25 % y 50 % con la misma configuración.\nConsolidar renders, PSNR, SSIM, LPIPS y tiempos en una tabla única.\nInsertar resultados 3D y analizar el punto de equilibrio entre compresión y calidad.\n\n\n\n\nRecursos\n\n\nCódigo y notebooks\nNotebook SPC\nNotebook 3DGS\nRepositorio oficial 3DGS\n\n\nHito actual\nEl piloto 2D está documentado; la comparación 3D aún no es válida porque faltan renders y métricas evaluables.\n\n\n\n\nObjetivo: medir cuánto podemos comprimir sin perder la escena."
+  },
+  {
+    "objectID": "slides/presentacion.html#referencias",
+    "href": "slides/presentacion.html#referencias",
+    "title": "Proyecto INF449",
+    "section": "Referencias",
+    "text": "Referencias\n\n[1] M. F. Duarte, M. A. Davenport, D. Takhar, J. N. Laska, T. Sun, K. F. Kelly y R. G. Baraniuk. Single-pixel imaging via compressive sampling. IEEE Signal Processing Magazine, 25(2), 2008. doi:10.1109/MSP.2007.914730\n[2] B. Kerbl, G. Kopanas, T. Leimkühler y G. Drettakis. 3D Gaussian Splatting for Real-Time Radiance Field Rendering. ACM Transactions on Graphics, 42(4), 2023. doi:10.1145/3592433\n[3] J. L. Schönberger y J.-M. Frahm. Structure-from-Motion Revisited. CVPR, 2016. doi:10.1109/CVPR.2016.445\n[4] A. Knapitsch, J. Park, Q.-Y. Zhou y V. Koltun. Tanks and Temples: Benchmarking Large-Scale Scene Reconstruction. ACM Transactions on Graphics, 36(4), 2017. doi:10.1145/3072959.3073599\n[5] Z. Wang, A. C. Bovik, H. R. Sheikh y E. P. Simoncelli. Image Quality Assessment: From Error Visibility to Structural Similarity. IEEE Transactions on Image Processing, 13(4), 2004. doi:10.1109/TIP.2003.819861\nFiguras de terceros: verificar el origen/licencia de Gaussians.jpeg y reemplazar o citar correctamente esa imagen antes de presentar."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Proyecto INF449",
+    "section": "",
+    "text": "Este proyecto estudia cómo reducir la información visual de una escena mediante una Single Pixel Camera (SPC) y evaluar su impacto en la reconstrucción 3D con Gaussian Splatting.\nEl flujo de trabajo combina mediciones basadas en patrones de Hadamard, reconstrucción de imágenes y entrenamiento de un modelo 3D. El objetivo es analizar cuánto se puede comprimir una vista manteniendo una representación 3D útil.\nIntegrantes: Francisco Alfaro · Ayrton Perez\n\n\nVer la presentación del proyecto →"
+  },
+  {
+    "objectID": "index.html#single-pixel-camera-y-3d-gaussian-splatting",
+    "href": "index.html#single-pixel-camera-y-3d-gaussian-splatting",
+    "title": "Proyecto INF449",
+    "section": "",
+    "text": "Este proyecto estudia cómo reducir la información visual de una escena mediante una Single Pixel Camera (SPC) y evaluar su impacto en la reconstrucción 3D con Gaussian Splatting.\nEl flujo de trabajo combina mediciones basadas en patrones de Hadamard, reconstrucción de imágenes y entrenamiento de un modelo 3D. El objetivo es analizar cuánto se puede comprimir una vista manteniendo una representación 3D útil.\nIntegrantes: Francisco Alfaro · Ayrton Perez\n\n\nVer la presentación del proyecto →"
+  }
+]
