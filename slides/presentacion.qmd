@@ -474,6 +474,8 @@ El piloto 2D está documentado; la comparación 3D aún no es válida porque fal
 
 ## Referencias
 
+<br><br>
+
 ::: {.references}
 **[1]** M. F. Duarte, M. A. Davenport, D. Takhar, J. N. Laska, T. Sun, K. F. Kelly y R. G. Baraniuk. *Single-pixel imaging via compressive sampling.* IEEE Signal Processing Magazine, 25(2), 2008. [doi:10.1109/MSP.2007.914730](https://doi.org/10.1109/MSP.2007.914730)
 
@@ -485,5 +487,4 @@ El piloto 2D está documentado; la comparación 3D aún no es válida porque fal
 
 **[5]** Z. Wang, A. C. Bovik, H. R. Sheikh y E. P. Simoncelli. *Image Quality Assessment: From Error Visibility to Structural Similarity.* IEEE Transactions on Image Processing, 13(4), 2004. [doi:10.1109/TIP.2003.819861](https://doi.org/10.1109/TIP.2003.819861)
 
-**Figuras de terceros:** verificar el origen/licencia de `Gaussians.jpeg` y reemplazar o citar correctamente esa imagen antes de presentar.
 :::
