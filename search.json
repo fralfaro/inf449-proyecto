@@ -53,7 +53,7 @@
     "href": "slides/presentacion.html#render-3dgs",
     "title": "Proyecto INF449",
     "section": "7. Render 3DGS",
-    "text": "7. Render 3DGS\n\n\n\n\n\nDe la nube de puntos a la escena renderizada. Fuente: LearnOpenCV, «3D Gaussian Splatting Paper Explanation» (learnopencv.com).\n\n\n\n\nOPTIMIZACIÓN\n\nOriginal frente a render\nEl modelo ajusta las gaussianas para que el render desde cada cámara reproduzca las vistas observadas [2].\n\n\\[L=(1-\\lambda)\\,L_1+\\lambda\\,L_{\\text{D-SSIM}}, \\qquad \\lambda = 0{,}2\\]\n\n\n3D pendientefaltan train, render y metrics válidos\n\nLa comparación definitiva será entre el baseline y los cuatro ratios SPC. El notebook todavía no tiene renders 3DGS válidos para mostrar."
+    "text": "7. Render 3DGS\n\n\n\n\n\nDe la nube de puntos a la escena renderizada. Fuente: LearnOpenCV, «3D Gaussian Splatting Paper Explanation» (learnopencv.com).\n\n\n\n\n\n\n\n\nNota\n\n\nPaper base: 3D Gaussian Splatting for Real-Time Radiance Field Rendering — SIGGRAPH 2023, ACM Transactions on Graphics.\nBernhard Kerbl, Georgios Kopanas, Thomas Leimkühler y George Drettakis.\nLeer el paper\n\n\n\n\n\nOPTIMIZACIÓN\n\nOriginal frente a render\nEl modelo ajusta las gaussianas para que el render desde cada cámara reproduzca las vistas observadas [2].\n\n\\[L=(1-\\lambda)\\,L_1+\\lambda\\,L_{\\text{D-SSIM}}, \\qquad \\lambda = 0{,}2\\]"
   },
   {
     "objectID": "slides/presentacion.html#baseline-frente-a-spc",

@@ -34,7 +34,7 @@
       vertical-align: middle;
     }
   </style>
-  <link rel="stylesheet" href="../site_libs/revealjs/dist/theme/quarto-e426cc471d79b380e2732a35d722ce4a.css">
+  <link rel="stylesheet" href="../site_libs/revealjs/dist/theme/quarto-b63627393cf1413dd081bff7ee8c3f86.css">
   <link href="../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="../site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="../site_libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -414,15 +414,30 @@ De nube de puntos a gaussianas 3D (esquema conceptual).
 </section>
 <section id="render-3dgs" class="slide level2">
 <h2>7. Render 3DGS</h2>
-<div class="columns">
-<div class="column" style="width:62%;">
+<div class="columns render-slide">
+<div class="column" style="width:58%;">
 <div class="image-frame gif-frame">
 <img data-src="images/gaussian_splatting.gif" alt="Animación del paso desde una nube de puntos a una escena renderizada">
 <div class="image-caption">
 De la nube de puntos a la escena renderizada. <span class="fig-source">Fuente: LearnOpenCV, «3D Gaussian Splatting Paper Explanation» (learnopencv.com).</span>
 </div>
 </div>
-</div><div class="column" style="width:38%;">
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Nota</strong></p>
+</div>
+<div class="callout-content">
+<p><strong>Paper base:</strong> <em>3D Gaussian Splatting for Real-Time Radiance Field Rendering</em> — SIGGRAPH 2023, ACM Transactions on Graphics.<br>
+Bernhard Kerbl, Georgios Kopanas, Thomas Leimkühler y George Drettakis.<br>
+<a href="https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/3d_gaussian_splatting_high.pdf">Leer el paper</a></p>
+</div>
+</div>
+</div>
+</div><div class="column" style="width:42%;">
 <div class="eyebrow">
 <p>OPTIMIZACIÓN</p>
 </div>
@@ -431,10 +446,9 @@ De la nube de puntos a la escena renderizada. <span class="fig-source">Fuente: L
 <div class="equation-card">
 <p><span class="math display">\[L=(1-\lambda)\,L_1+\lambda\,L_{\text{D-SSIM}}, \qquad \lambda = 0{,}2\]</span></p>
 </div>
-<div class="metric-row">
-<p><span class="metric">3D pendiente</span><span class="metric-label">faltan train, render y metrics válidos</span></p>
+<div class="image-frame metric-frame">
+<p><img data-src="images/metricas.png" alt="Comparación de métricas SSIM y PSNR entre modelos 3D"></p>
 </div>
-<p>La comparación definitiva será entre el baseline y los cuatro ratios SPC. El notebook todavía no tiene renders 3DGS válidos para mostrar.</p>
 </div></div>
 </section>
 <section id="baseline-frente-a-spc" class="slide level2">
