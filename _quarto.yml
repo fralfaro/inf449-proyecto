@@ -1,0 +1,13 @@
+project:
+  type: website
+  render:
+    - index.qmd
+    - slides/presentacion.qmd
+
+website:
+  title: "Proyecto INF449"
+  navbar: false
+
+format:
+  html:
+    toc: false
