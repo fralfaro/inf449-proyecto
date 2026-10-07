@@ -238,7 +238,7 @@ $$G(x)=\exp\left(-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)\right)$$
 ::: {.column width="57%"}
 ::: {.image-frame .gaussian-frame}
 ![](images/Gaussians.jpeg){fig-alt="Conversión conceptual de nube de puntos a Gaussian Splatting"}
-<div class="image-caption">De nube de puntos a gaussianas 3D (esquema conceptual). <span class="source-pending">Verificar origen/licencia antes de presentar.</span></div>
+<div class="image-caption">De nube de puntos a gaussianas 3D (esquema conceptual). </div>
 :::
 
 ::: {.equation-card}
