@@ -1,0 +1,18 @@
+---
+title: "Proyecto INF449"
+format:
+  html:
+    toc: false
+---
+
+## Single Pixel Camera y 3D Gaussian Splatting
+
+Este proyecto estudia cómo reducir la información visual de una escena mediante una **Single Pixel Camera (SPC)** y evaluar su impacto en la reconstrucción 3D con **Gaussian Splatting**.
+
+El flujo de trabajo combina mediciones basadas en patrones de Hadamard, reconstrucción de imágenes y entrenamiento de un modelo 3D. El objetivo es analizar cuánto se puede comprimir una vista manteniendo una representación 3D útil.
+
+**Integrantes:** Francisco Alfaro · Ayrton Perez
+
+### Presentación
+
+[**Ver la presentación del proyecto →**](slides/presentacion.html)
