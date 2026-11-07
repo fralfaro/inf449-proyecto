@@ -1,94 +1,192 @@
 [
   {
-    "objectID": "slides/presentacion.html#estado-de-avance",
-    "href": "slides/presentacion.html#estado-de-avance",
+    "objectID": "slides/presentacion.html#section",
+    "href": "slides/presentacion.html#section",
     "title": "Proyecto INF449",
-    "section": "Estado de avance",
-    "text": "Estado de avance\n\n\n\nPROYECTO INF449 · OCTUBRE 2026\n\nComprimir la captura.Reconstruir la escena.\nSingle Pixel Camera + Gaussian Splatting\nFrancisco Alfaro · Ayrton Perez\n\n\n  \n  Render ilustrativo con 3DGS. Fuente: LearnOpenCV, «3D Gaussian Splatting Paper Explanation» (learnopencv.com).\n\n\n\nLa pregunta del proyecto es simple: cuánto podemos reducir la información de las vistas sin perder una representación 3D útil. El flujo combina una simulación SPC basada en Hadamard con Gaussian Splatting."
+    "section": "",
+    "text": "INF449 · Fotografía Computacional · Proyecto final\n\n\nComprimir la captura:\ncámara de un píxel y reconstrucción 2D\n\n\nFrancisco Alfaro · Ayrton Perez\n\n\nUniversidad Técnica Federico Santa María · Departamentos de Electrónica e Informática\nCódigo: github.com/fralfaro/inf449-proyecto\n\n\n\nPresentamos un estudio de simulación de una cámara de un píxel. La pregunta es cuántas mediciones por vista se pueden quitar antes de que la calidad caiga. El alcance de este trabajo es 2D; el paso a 3D con Gaussian Splatting es la motivación y el trabajo futuro. Estructura: contexto y estado del arte, modelo y método, experimentos, el vínculo con 3DGS, y conclusiones."
   },
   {
-    "objectID": "slides/presentacion.html#problema-general",
-    "href": "slides/presentacion.html#problema-general",
+    "objectID": "slides/presentacion.html#una-cámara-de-un-píxel-cambia-sensor-por-mediciones",
+    "href": "slides/presentacion.html#una-cámara-de-un-píxel-cambia-sensor-por-mediciones",
     "title": "Proyecto INF449",
-    "section": "1. Problema general",
-    "text": "1. Problema general\n\n\n\nMOTIVACIÓN\n\nMenos mediciones,misma escena\nUna reconstrucción 3D multivista necesita muchas imágenes y sus poses. En este proyecto simulamos una Single Pixel Camera (SPC) para medir qué ocurre cuando solo conservamos una fracción de la información.\n\nPregunta central\n¿Cuánto se puede comprimir una vista y todavía obtener un modelo 3D útil?\n\n\nEscena objetivo: truck [4]251 vistasposes COLMAP\n\n\n\n\n\nVista de referencia de truck, la misma que sigue el notebook a través del pipeline. Fuente: dataset Tanks and Temples [4], exportación propia."
+    "section": "Una cámara de un píxel cambia sensor por mediciones",
+    "text": "Una cámara de un píxel cambia sensor por mediciones\n\nContexto · Problema y pregunta\n\n\n\nProblema\nUn sensor matricial es caro en ciertas bandas. La SPC usa un solo detector y una secuencia de patrones de iluminación [1, 2].\n\n\nBrecha\nEl precio es el tiempo: cada vista exige muchas mediciones, y una escena 3D necesita cientos de vistas.\n\n\nPregunta\n¿Cuánta calidad se pierde al reducir las mediciones por vista, y qué patrón y qué reconstrucción lo soportan mejor?\n\n\n\n\n\n\nLa SPC proyecta patrones sobre la escena y mide un solo número por patrón. Reconstruir una imagen exige resolver un problema inverso. Si además queremos una escena 3D, hay que repetirlo por cada vista, así que el costo se multiplica."
   },
   {
-    "objectID": "slides/presentacion.html#qué-es-una-spc",
-    "href": "slides/presentacion.html#qué-es-una-spc",
+    "objectID": "slides/presentacion.html#estado-del-arte-de-la-arquitectura-de-rice-a-la-imagen-3d",
+    "href": "slides/presentacion.html#estado-del-arte-de-la-arquitectura-de-rice-a-la-imagen-3d",
     "title": "Proyecto INF449",
-    "section": "2. ¿Qué es una SPC?",
-    "text": "2. ¿Qué es una SPC?\n\n\n\nMODELO DIRECTO\n\n\n\n\n\n\nflowchart LR\n  A[Escena / imagen RGB] --&gt; B[Patrón Hadamard]\n  B --&gt; C[Medición escalar]\n  C --&gt; D[Vector de mediciones y]\n  D --&gt; E[Reconstrucción x-hat]\n  E --&gt; F[Entrada a 3DGS]\n\n\n\n\n\n\nLa cámara no registra cada píxel por separado: proyecta la escena sobre patrones y conserva las mediciones resultantes [1].\n\n\n\n\nSalida de codes/notebook.ipynb: patrones, medición escalar y reconstrucción 2D. Es una simulación matemática, no un montaje óptico físico. Fuente: elaboración propia.\n\n\n\n\\[y_k = \\langle h_k, x\\rangle\\]\nCada medición es un producto interno entre la imagen \\(x\\) y un patrón \\(h_k\\)."
+    "section": "Estado del arte: de la arquitectura de Rice a la imagen 3D",
+    "text": "Estado del arte: de la arquitectura de Rice a la imagen 3D\n\nContexto · Single Pixel Camera\n\n\n\n\nAño\nTrabajo\nAporte\n\n\n\n\n2006\nDonoho [3]\nBase teórica: muestreo comprimido y recuperación con ℓ₁\n\n\n2008\nDuarte et al. [1]\nCámara de un píxel: un DMD y un fotodiodo con muestreo comprimido\n\n\n2013\nSun et al. [4]\nImagen 3D con detectores de un píxel\n\n\n2017\nZhang et al. [5]\nHadamard frente a Fourier para imagen de un píxel\n\n\n2019\nEdgar, Gibson, Padgett [2] · Yu [6]\nRevisión del campo; orden cake-cutting sub-Nyquist\n\n\n\n\nLa idea de cámara de un píxel con muestreo comprimido viene de Rice: un DMD proyecta patrones y un fotodiodo mide. Duarte et al. lo formalizaron como cámara. Sun et al. extendieron a 3D con varios detectores. Zhang, Sun y Yu estudian qué base y qué orden de patrones necesitan menos mediciones. Edgar et al. es la revisión de referencia."
   },
   {
-    "objectID": "slides/presentacion.html#hadamard-y-reconstrucción",
-    "href": "slides/presentacion.html#hadamard-y-reconstrucción",
+    "objectID": "slides/presentacion.html#cada-medición-es-un-producto-interno-con-un-patrón",
+    "href": "slides/presentacion.html#cada-medición-es-un-producto-interno-con-un-patrón",
     "title": "Proyecto INF449",
-    "section": "3. Hadamard y reconstrucción",
-    "text": "3. Hadamard y reconstrucción\n\n\n\n\n\nResultado preliminar en una vista: al aumentar el ratio, mejoran PSNR y SSIM. Fuente: elaboración propia, notebook.\n\n\n\n\nTRANSFORMADA ORTOGONAL\n\nMedir en una base estructurada\nLos patrones de Hadamard son binarios y ortogonales. Con ellos podemos controlar directamente cuántos coeficientes conservar.\n\n\\[y = S\\,H\\,x \\qquad\\qquad \\hat{x} = H^{\\mathsf T} S^{\\mathsf T} y\\]\n\n\\(H\\): base Hadamard normalizada, \\(H^{\\mathsf T}H = I\\).\n\\(S \\in \\{0,1\\}^{m\\times n}\\) conserva \\(m = r\\,n\\) coeficientes; \\(S^{\\mathsf T}\\) pone en cero los descartados.\nSe conservan los de menor secuencia (menos cambios de signo en filas + columnas): las componentes de baja frecuencia.\n\n\n\n\n\nLa simulación trabaja a 64 × 64 y luego reescala para conservar la resolución compatible con las poses. Fuente: elaboración propia, notebook."
+    "section": "Cada medición es un producto interno con un patrón",
+    "text": "Cada medición es un producto interno con un patrón\n\nMétodo · Modelo de medición\n\n\n\n\n\nArquitectura de una SPC. Fuente: material del curso.\n\n\n\nMedición con ruido\n\\mathbf{y}=\\mathbf{\\Phi}\\mathbf{x}+\\mathbf{n},\\qquad r=\\frac{M}{N}\nUn DMD solo tiene máscaras {0,1}\n\\mathbf{P}=\\tfrac{1}{2}(\\mathbf{1}+\\mathbf{H}),\\qquad c = 2y-\\mathrm{DC}\n\n\n\n\n\\mathbf{x} es la vista (rejilla 512×1024, N=524\\,288); r es la razón de medición.\n\n\nSe mide también el nivel DC para recuperar el coeficiente en ±1.\n\n\nEsa corrección duplica el ruido, un efecto que suele omitirse.\n\n\n\nLa matriz Phi no se almacena: sería de 524 mil al cuadrado. Se aplica con una transformada rápida de Walsh-Hadamard en GPU, que cuesta 3.4 milisegundos por vista de tres canales. Como el espejo solo enciende o apaga, se miden máscaras de 0 y 1 y se corrige con una medición de nivel DC."
   },
   {
-    "objectID": "slides/presentacion.html#comparación-spc",
-    "href": "slides/presentacion.html#comparación-spc",
+    "objectID": "slides/presentacion.html#muestreo-comprimido-pocas-mediciones-si-la-imagen-es-escasa",
+    "href": "slides/presentacion.html#muestreo-comprimido-pocas-mediciones-si-la-imagen-es-escasa",
     "title": "Proyecto INF449",
-    "section": "4. Comparación SPC",
-    "text": "4. Comparación SPC\n\nPILOTO 2D · 30 VISTAS\n\nDe la imagen completa a una fracción de mediciones\nEl piloto 2D ya permite mostrar una vista de cada ratio. Los valores de abajo son el promedio sobre 30 vistas; todavía no son métricas de la escena 3D.\n\n\n  \n    \n    Originalreferencia RGBsin compresión\n  \n  \n    \n    SPC 5 %30 vistas16,48 dB · 0,429\n  \n  \n    \n    SPC 10 %30 vistas17,30 dB · 0,434\n  \n  \n    \n    SPC 25 %30 vistas18,54 dB · 0,457\n  \n  \n    \n    SPC 50 %30 vistas19,70 dB · 0,494\n  \n\n\n\n\n\n\nPromedios y desviación estándar sobre 30 vistas. Fuente: elaboración propia, notebook.\n\n\n\n\n\n\nCondición\nMediciones\nEstado\n\n\n\n\nBaseline\n100 %\nentrada original\n\n\nSPC 5 / 10 / 25 / 50 %\nratio controlado\n30 vistas procesadas\n\n\n\n\n\n\n\n\n\nNota\n\n\nLa tira ya documenta el piloto 2D. Falta repetir el recorrido completo en 3DGS y comparar los renders contra la referencia original."
+    "section": "Muestreo comprimido: pocas mediciones si la imagen es escasa",
+    "text": "Muestreo comprimido: pocas mediciones si la imagen es escasa\n\nMétodo · Fundamento teórico [3]\n\n\n\nSi \\mathbf{x} es K-escasa y \\mathbf{\\Phi} cumple RIP\nM\\ \\ge\\ C\\,K\\log\\!\\frac{N}{K}\nRecuperación\n\\hat{\\mathbf{x}}=\\arg\\min_{\\mathbf{x}}\\ \\|\\mathbf{x}\\|_1\\ \\ \\text{s.a.}\\ \\ \\|\\mathbf{\\Phi}\\mathbf{x}-\\mathbf{y}\\|_2\\le\\varepsilon\n\n\n\nLas imágenes naturales son escasas en una base adecuada (wavelet, gradiente).\n\n\nEn la práctica se usa TV: la escasez está en el gradiente, no en los píxeles.\n\n\nCon un patrón ordenado la teoría no aplica tal cual; se evalúa de forma empírica.\n\n\n\n\nEl resultado clásico dice que, con una matriz que cumple la propiedad de isometría restringida, bastan del orden de K log N sobre K mediciones. En imágenes usamos variación total porque los gradientes son escasos. Con Hadamard ordenado no hay garantía de RIP, por eso medimos empíricamente."
   },
   {
-    "objectID": "slides/presentacion.html#gaussian-splatting",
-    "href": "slides/presentacion.html#gaussian-splatting",
+    "objectID": "slides/presentacion.html#la-base-de-hadamard-ortogonal-binaria-y-rápida",
+    "href": "slides/presentacion.html#la-base-de-hadamard-ortogonal-binaria-y-rápida",
     "title": "Proyecto INF449",
-    "section": "5. Gaussian Splatting",
-    "text": "5. Gaussian Splatting\n\n\n\nREPRESENTACIÓN 3D\n\nDe puntos a gaussianas\nCada primitiva se describe por su posición, forma, orientación, opacidad y color [2]:\n\n\nμ posición\n\n\nΣ covarianza\n\n\nα opacidad\n\n\nc color\n\n\n\n\\[G(x)=\\exp\\left(-\\frac{1}{2}(x-\\mu)^T\\Sigma^{-1}(x-\\mu)\\right)\\]\n\n\n\n\n\nDe nube de puntos a gaussianas 3D (esquema conceptual).\n\n\n\n\\[C(p)=\\sum_i T_i\\,\\alpha_i\\,c_i, \\qquad T_i=\\prod_{j&lt;i}(1-\\alpha_j)\\]"
+    "section": "La base de Hadamard: ortogonal, binaria y rápida",
+    "text": "La base de Hadamard: ortogonal, binaria y rápida\n\nMétodo · Patrones\n\n\n\n\n\nPatrones de Hadamard. Fuente: material del curso.\n\n\n\nConstrucción de Sylvester\n\\mathbf{H}_{2n}=\\begin{bmatrix}\\mathbf{H}_n&\\mathbf{H}_n\\\\\\mathbf{H}_n&-\\mathbf{H}_n\\end{bmatrix},\\quad \\mathbf{H}_1=[1]\nOrtogonalidad\n\\mathbf{H}\\mathbf{H}^{\\top}=N\\,\\mathbf{I}\\ \\Rightarrow\\ \\mathbf{\\Phi}\\mathbf{\\Phi}^{\\top}=\\mathbf{I}\nExige N potencia de 2 (de ahí la rejilla 512×1024) y permite una transformada rápida.\n\n\n\nHadamard se construye por recursión y sus filas son ortogonales; con la normalización adecuada, Phi por Phi transpuesta es la identidad. Eso hace que la reconstrucción directa sea la solución de mínima norma. La condición de potencias de 2 obliga a usar una rejilla de 512 por 1024."
   },
   {
-    "objectID": "slides/presentacion.html#colmap",
-    "href": "slides/presentacion.html#colmap",
+    "objectID": "slides/presentacion.html#un-dmd-solo-muestra-0-y-1-patrón-positivo-y-negativo",
+    "href": "slides/presentacion.html#un-dmd-solo-muestra-0-y-1-patrón-positivo-y-negativo",
     "title": "Proyecto INF449",
-    "section": "6. COLMAP",
-    "text": "6. COLMAP\n\nGEOMETRÍA MULTIVISTA\n\nCámaras + nube de puntos\n\n\n\n  \n    ⋯ ⋅ ⋅ ⋅ ⋅ ⋅ ⋅ ⋯\n    nube de puntos\n    CAM 01\n    CAM 02\n    CAM 03\n    truck\n  \n  Poses estimadas y triangulación (esquema)\n\n\n\n  \n  La vista real pertenece a truck; sus poses se conservan desde COLMAP para todas las condiciones. Fuente: dataset [4], exportación propia.\n\n\n\n\n\n\n\n\nNota\n\n\nLa preparación del proyecto conserva la correspondencia entre cada nombre de imagen y su pose en images.bin."
+    "section": "Un DMD solo muestra 0 y 1: patrón positivo y negativo",
+    "text": "Un DMD solo muestra 0 y 1: patrón positivo y negativo\n\nMétodo · Hadamard en un DMD\n\n\n\n\n\nSeparación en patrón positivo y negativo, con filtro gaussiano. Fuente: figura del material de ejemplo; verificar.\n\n\n\nPatrón ±1 con máscaras {0,1}\n\\mathbf{h}=\\mathbf{h}^{+}-\\mathbf{h}^{-},\\qquad \\mathbf{h}^{\\pm}\\in\\{0,1\\}^{N}\nEsquema usado aquí: un patrón + referencia DC\nc=2y-y_{\\mathrm{DC}}\n\n\n\n\nLa versión diferencial mide \\mathbf{h}^{+} y \\mathbf{h}^{-}: el doble de mediciones.\n\n\nAquí se mide un patrón y el nivel DC: menos mediciones, pero el ruido se duplica.\n\n\nLa óptica difumina el patrón; la figura lo modela con un filtro gaussiano (\\sigma=1{,}6).\n\n\n\nEl espejo solo enciende o apaga, así que un patrón con valores más uno y menos uno se descompone en dos patrones binarios. La figura muestra la versión diferencial y el efecto del desenfoque de la óptica. En este trabajo no modelamos el desenfoque; usamos un único patrón y una referencia DC, que cuesta la mitad de mediciones pero duplica el ruido."
   },
   {
-    "objectID": "slides/presentacion.html#render-3dgs",
-    "href": "slides/presentacion.html#render-3dgs",
+    "objectID": "slides/presentacion.html#el-orden-de-los-patrones-decide-qué-se-mide-primero",
+    "href": "slides/presentacion.html#el-orden-de-los-patrones-decide-qué-se-mide-primero",
     "title": "Proyecto INF449",
-    "section": "7. Render 3DGS",
-    "text": "7. Render 3DGS\n\n\n\n\n\nDe la nube de puntos a la escena renderizada. Fuente: LearnOpenCV, «3D Gaussian Splatting Paper Explanation» (learnopencv.com).\n\n\n\n\n\n\n\n\nNota\n\n\nPaper base: 3D Gaussian Splatting for Real-Time Radiance Field Rendering — SIGGRAPH 2023, ACM Transactions on Graphics.\nBernhard Kerbl, Georgios Kopanas, Thomas Leimkühler y George Drettakis.\nLeer el paper\n\n\n\n\n\nOPTIMIZACIÓN\n\nOriginal frente a render\nEl modelo ajusta las gaussianas para que el render desde cada cámara reproduzca las vistas observadas [2].\n\n\\[L=(1-\\lambda)\\,L_1+\\lambda\\,L_{\\text{D-SSIM}}, \\qquad \\lambda = 0{,}2\\]"
+    "section": "El orden de los patrones decide qué se mide primero",
+    "text": "El orden de los patrones decide qué se mide primero\n\nMétodo · Órdenes de patrones [5, 6]\n\n\n\nCake-cutting\nOrdena las filas por el número de bloques conexos del patrón: primero las bajas frecuencias. Un patrón separable w_i(x)\\,w_j(y) tiene (s_i+1)(s_j+1) bloques.\n\n\nRussian dolls\nOrden por escala anidada; buena resolución con pocas mediciones.\n\n\nFourier y aleatorio\nFourier necesita 4 pasos por coeficiente (4N mediciones); el binario aleatorio no prioriza frecuencias y se implementa con permutación + Hadamard + submuestreo.\n\n\n\nEn este trabajo se comparan Hadamard ordenado (cake-cutting) y binario aleatorio estructurado.\n\n\nEl orden importa porque con pocas mediciones solo se captura una parte de las frecuencias. Un Bernoulli i.i.d. denso a esta resolución ocuparía 1.7 GB al 5 por ciento y 17 GB al 50, por eso se usa una matriz estructuralmente aleatoria."
   },
   {
-    "objectID": "slides/presentacion.html#baseline-frente-a-spc",
-    "href": "slides/presentacion.html#baseline-frente-a-spc",
+    "objectID": "slides/presentacion.html#ruido-del-detector-poisson-lectura-y-cuantización",
+    "href": "slides/presentacion.html#ruido-del-detector-poisson-lectura-y-cuantización",
     "title": "Proyecto INF449",
-    "section": "8. Baseline frente a SPC",
-    "text": "8. Baseline frente a SPC\n\nDISEÑO DE LA COMPARACIÓN\n\nMisma escena, distinta información\n\n\n\n01\nBaseline\nImágenes RGB originales, poses COLMAP y entrenamiento 3DGS.\n\n\n\n02\nSPC\nMediciones Hadamard → reconstrucción de cada vista → mismas poses → 3DGS.\n\n\n\n03\nEvaluación\nPSNR, L1, tiempos de entrenamiento y calidad visual del render.\n\n\n\nLectura: si la calidad 3D cae poco al reducir las mediciones, la SPC funciona como una compresión útil para el pipeline multivista."
+    "section": "Ruido del detector: Poisson, lectura y cuantización",
+    "text": "Ruido del detector: Poisson, lectura y cuantización\n\nMétodo · Modelo físico\n\n\n\nMedición del fotodiodo\ny_i=Q_b\\!\\left(\\frac{\\mathrm{Pois}\\!\\big(\\gamma\\,\\langle\\mathbf{p}_i,\\mathbf{x}\\rangle\\big)}{\\gamma}+\\mathcal{N}(0,\\sigma^2)\\right)\nCoeficiente en ±1\nc_i = 2y_i-y_{\\mathrm{DC}}\\ \\Rightarrow\\ \\sigma_c = 2\\sigma_y\n\n\n\n\\gamma=10^{9} fotones por patrón; ruido de lectura \\sigma=10^{-5}.\n\n\nQ_b: cuantización de 16 bits; la referencia DC se promedia 16 veces.\n\n\nCon estos parámetros el ruido no domina: el límite es la cantidad de mediciones.\n\n\n\n\nEl ruido de disparo es Poisson, hay ruido de lectura gaussiano y el ADC cuantiza. Con estos valores el ruido es bajo; el estudio de ruido del notebook explora niveles más agresivos. El factor 2 viene de pasar de máscaras 0 y 1 a coeficientes en menos uno y uno."
   },
   {
-    "objectID": "slides/presentacion.html#métricas",
-    "href": "slides/presentacion.html#métricas",
+    "objectID": "slides/presentacion.html#directa-mínima-norma.-regularizada-variación-total",
+    "href": "slides/presentacion.html#directa-mínima-norma.-regularizada-variación-total",
     "title": "Proyecto INF449",
-    "section": "9. Métricas",
-    "text": "9. Métricas\n\nQUÉ VAMOS A MEDIR\n\nCalidad de entrada y calidad 3D\n\n\n\n  \n    \n    Resultado disponible: métricas 2D promedio sobre 30 vistas. Fuente: elaboración propia, notebook.\n  \n\nPSNR: fidelidad de imagen · L1: error absoluto · SSIM [5]: estructura perceptual · Tiempo: costo computacional\n\n\n\n\nCondición\nPSNR (dB)\nSSIM\nL1\nTiempo\n\n\n\n\nBaseline\n—\n—\n—\n—\n\n\nSPC 5 %\n16,48\n0,429\n—\n2D\n\n\nSPC 10 %\n17,30\n0,434\n—\n2D\n\n\nSPC 25 %\n18,54\n0,457\n—\n2D\n\n\nSPC 50 %\n19,70\n0,494\n—\n2D\n\n\n\n\n\n\n\n\n\nNota\n\n\nLectura: el piloto 2D mejora de forma monotónica con más mediciones. La tabla 3D (PSNR/SSIM/LPIPS y tiempos) sigue pendiente porque OE4 no generó renders evaluables."
+    "section": "Directa: mínima norma. Regularizada: variación total",
+    "text": "Directa: mínima norma. Regularizada: variación total\n\nMétodo · Reconstrucción [7]\n\n\n\nDirecta\n\\hat{\\mathbf{x}}=\\mathbf{\\Phi}^{\\top}\\mathbf{y}\nEquivale a rellenar con ceros los coeficientes no medidos.\n\n\nRegularizada con TV\n\\hat{\\mathbf{x}}=\\arg\\min_{\\mathbf{x}}\\ \\tfrac12\\|\\mathbf{\\Phi}\\mathbf{x}-\\mathbf{y}\\|_2^2+\\lambda\\,\\mathrm{TV}(\\mathbf{x})\n\\mathrm{TV}(\\mathbf{x})=\\sum_{i,j}\\sqrt{(\\nabla_h x)_{ij}^2+(\\nabla_v x)_{ij}^2}\n\n\n\n\\lambda se elige con vistas de entrenamiento (rejilla 10^{-3} a 3\\times10^{-2}) y se fija antes de evaluar.\n\n\nLa TV de Rudin, Osher y Fatemi penaliza la variación del gradiente, preserva bordes y suaviza zonas planas. La directa no usa prior: es la proyección sobre los coeficientes medidos. Elegir lambda en vistas de entrenamiento evita sesgar la evaluación."
   },
   {
-    "objectID": "slides/presentacion.html#estado-del-proyecto",
-    "href": "slides/presentacion.html#estado-del-proyecto",
+    "objectID": "slides/presentacion.html#fista-resuelve-el-problema-con-convergencia-acelerada",
+    "href": "slides/presentacion.html#fista-resuelve-el-problema-con-convergencia-acelerada",
     "title": "Proyecto INF449",
-    "section": "10. Estado del proyecto",
-    "text": "10. Estado del proyecto\n\nAVANCE A LA FECHA\n\n\n\n✓ Hecho\n\nSimulación SPC con patrones Hadamard implementada en notebook.\nPipeline 2D reproducible y 30 vistas procesadas.\nCorrespondencia imagen ↔︎ pose en images.bin.\nResolución de trabajo 64 × 64 y reescalado compatible con las poses.\n\n\n\n◐ En curso\n\nPreparar el repositorio 3DGS en la VM (la inicialización falló en la última corrida).\nRepetir el piloto 3D con baseline y spc_025.\n\n\n\n○ Pendiente\n\nEjecutar train.py, render.py y metrics.py para baseline y ratios SPC.\nValidar test/ours_&lt;iter&gt;/{renders,gt}, results.json y logs.\nRecién después, completar PSNR, SSIM, LPIPS y tiempos 3D.\nInsertar renders, gráficos 3D y análisis final."
+    "section": "FISTA resuelve el problema con convergencia acelerada",
+    "text": "FISTA resuelve el problema con convergencia acelerada\n\nMétodo · Algoritmo [8]\n\n\n\nPaso proximal con el gradiente del ajuste\n\\mathbf{x}_k=\\mathrm{prox}_{\\frac{\\lambda}{L}\\mathrm{TV}}\\!\\Big(\\mathbf{z}_k-\\tfrac1L\\mathbf{\\Phi}^{\\top}(\\mathbf{\\Phi}\\mathbf{z}_k-\\mathbf{y})\\Big)\nAceleración\nt_{k+1}=\\frac{1+\\sqrt{1+4t_k^2}}{2}\n\\mathbf{z}_{k+1}=\\mathbf{x}_k+\\frac{t_k-1}{t_{k+1}}(\\mathbf{x}_k-\\mathbf{x}_{k-1})\n\n\n\nConvergencia O(1/k^2) frente a O(1/k) del gradiente proximal simple.\n\n\nEl proximal de TV se resuelve con FGP (gradiente rápido proyectado), en lotes en GPU.\n\n\nCon \\mathbf{\\Phi}\\mathbf{\\Phi}^{\\top}=\\mathbf{I} el paso es L=1. Tope de 100 iteraciones.\n\n\n\n\nFISTA añade un término de momento al gradiente proximal. El proximal de TV no tiene forma cerrada y se resuelve con el método FGP de Beck y Teboulle. Todo se hace por lotes en GPU, de modo que una vista tarda alrededor de un segundo."
   },
   {
-    "objectID": "slides/presentacion.html#próximos-pasos",
-    "href": "slides/presentacion.html#próximos-pasos",
+    "objectID": "slides/presentacion.html#diseño-experimental-escenas-condiciones-y-recursos",
+    "href": "slides/presentacion.html#diseño-experimental-escenas-condiciones-y-recursos",
     "title": "Proyecto INF449",
-    "section": "11. Próximos pasos",
-    "text": "11. Próximos pasos\n\n\n\nPLAN DE CIERRE\n\nDel piloto a la comparación final\n\nReparar la inicialización del repositorio 3DGS y confirmar que train.py arranca.\nRepetir primero el piloto con baseline y spc_025; no pasar a FULL sin aprobarlo.\nEjecutar baseline, 5 %, 10 %, 25 % y 50 % con la misma configuración.\nConsolidar renders, PSNR, SSIM, LPIPS y tiempos en una tabla única.\nInsertar resultados 3D y analizar el punto de equilibrio entre compresión y calidad.\n\n\n\n\n\nCódigo, notebooks y referencias\n\n\nCódigo y notebooks · repositorio Github\nPágina oficial de 3D Gaussian Splatting\nRepositorio oficial en GitHub\nPaper de 3D Gaussian Splatting\n\n\nHito actual\nEl piloto 2D está documentado; la comparación 3D aún no es válida porque faltan renders y métricas evaluables.\n\n\n\n\nObjetivo: medir cuánto podemos comprimir sin perder la escena."
+    "section": "Diseño experimental: escenas, condiciones y recursos",
+    "text": "Diseño experimental: escenas, condiciones y recursos\n\nExperimentos · Diseño\n\n\n\n\nElemento\nValor\n\n\n\n\nEscenas\nTruck, Train (Tanks and Temples); DrJohnson, Playroom (Deep Blending) [10]\n\n\nVistas\n24 por escena, equiespaciadas\n\n\nRazones de medición\n5 %, 10 %, 25 %, 50 %\n\n\nPatrones × métodos\nHadamard ordenado, aleatorio × directa, TV\n\n\nControl\nSolo remuestreo a 512×1024 (sin SPC)\n\n\nHardware\nRTX 4060 Laptop 8 GB · PyTorch 2.11 + CUDA 12.8\n\n\nTiempo\n12–15 min por escena (24 vistas, todas las condiciones); 53 min las cuatro\n\n\n\n\nEl control de solo remuestreo aísla la pérdida que no viene de la SPC: pasar a la rejilla de potencias de 2 y guardar en JPEG. Las escenas se simulan con la misma semilla. Los tiempos son los medidos: entre 12 y 15 minutos por escena, 53 minutos en total."
+  },
+  {
+    "objectID": "slides/presentacion.html#métricas-error-de-señal-estructura-y-percepción",
+    "href": "slides/presentacion.html#métricas-error-de-señal-estructura-y-percepción",
+    "title": "Proyecto INF449",
+    "section": "Métricas: error de señal, estructura y percepción",
+    "text": "Métricas: error de señal, estructura y percepción\n\nExperimentos · Métricas\n\n\n\nPSNR\n\\mathrm{PSNR}=10\\log_{10}\\frac{1}{\\mathrm{MSE}(\\hat{\\mathbf{x}},\\mathbf{x})}\\ \\text{dB}\nSSIM\n\\mathrm{SSIM}=\\frac{(2\\mu_a\\mu_b+c_1)(2\\sigma_{ab}+c_2)}{(\\mu_a^2+\\mu_b^2+c_1)(\\sigma_a^2+\\sigma_b^2+c_2)}\n\n\n\nPSNR: error de píxel; sensible a ruido de baja amplitud.\n\n\nSSIM: estructura local (luminancia, contraste, correlación).\n\n\nLPIPS-VGG: distancia entre características de una red; mide percepción.\n\n\nSiempre contra la imagen original, a la resolución final.\n\n\n\n\nUsamos las tres métricas porque se complementan: PSNR cae por ruido aunque la estructura se vea bien; SSIM mide estructura; LPIPS se acerca más a lo que percibe una persona. Todas se calculan contra la imagen original y con una única función para todas las condiciones."
+  },
+  {
+    "objectID": "slides/presentacion.html#con-25-de-las-mediciones-la-escena-sigue-reconocible",
+    "href": "slides/presentacion.html#con-25-de-las-mediciones-la-escena-sigue-reconocible",
+    "title": "Proyecto INF449",
+    "section": "Con 25 % de las mediciones la escena sigue reconocible",
+    "text": "Con 25 % de las mediciones la escena sigue reconocible\n\nResultados · Truck, Hadamard + TV\n\n\n\n\n\n\nAl 5 % aparecen bloques en zonas de textura (follaje).\n\n\nDesde el 25 % los bordes del camión se conservan.\n\n\nVista 000001; el PSNR es el de esa vista.\n\n\n\nLas figuras salen de la corrida paper24, vista 000001 de Truck. El PSNR es el de esa vista, no el promedio. El control de solo remuestreo muestra el techo del experimento."
+  },
+  {
+    "objectID": "slides/presentacion.html#calidad-frente-a-razón-de-medición",
+    "href": "slides/presentacion.html#calidad-frente-a-razón-de-medición",
+    "title": "Proyecto INF449",
+    "section": "Calidad frente a razón de medición",
+    "text": "Calidad frente a razón de medición\n\nResultados · Truck, 24 vistas\n\n\n\n\n\nMedia y ±1 desviación entre vistas. Línea punteada: control.\n\n\nHadamard con TV domina en las tres métricas. Los patrones aleatorios con reconstrucción directa quedan muy por debajo; con TV se acercan a Hadamard a razones altas."
+  },
+  {
+    "objectID": "slides/presentacion.html#la-regularización-importa-más-con-patrones-aleatorios",
+    "href": "slides/presentacion.html#la-regularización-importa-más-con-patrones-aleatorios",
+    "title": "Proyecto INF449",
+    "section": "La regularización importa más con patrones aleatorios",
+    "text": "La regularización importa más con patrones aleatorios\n\nResultados · Truck, PSNR medio (dB) en 24 vistas\n\n\n\n\nPatrón · método\n5 %\n10 %\n25 %\n50 %\n\n\n\n\nHadamard · directa\n22,84\n24,72\n28,04\n30,85\n\n\nHadamard · TV\n24,11\n26,13\n29,55\n32,10\n\n\nAleatorio · directa\n12,68\n12,99\n14,02\n16,19\n\n\nAleatorio · TV\n23,18\n25,35\n28,49\n31,05\n\n\nControl (solo remuestreo)\n38,07\n\n\n\n\n\n≈ +1,3 dB\nTV frente a directa, con Hadamard\n\n\nCon patrones aleatorios, la directa no sirve (13–16 dB); la TV la lleva a 23–31 dB.\n\n\n\nCifras de summary_2d.csv, condición todas las vistas (n = 24), escena Truck. La siguiente diapositiva muestra el agregado de las cuatro escenas."
+  },
+  {
+    "objectID": "slides/presentacion.html#con-cuatro-escenas-la-tendencia-se-mantiene",
+    "href": "slides/presentacion.html#con-cuatro-escenas-la-tendencia-se-mantiene",
+    "title": "Proyecto INF449",
+    "section": "Con cuatro escenas la tendencia se mantiene",
+    "text": "Con cuatro escenas la tendencia se mantiene\n\nResultados · Media de 4 escenas × 24 vistas\n\n\n\n\n\n\n28,1 → 34,6 dB\nHadamard + TV, del 5 % al 50 %\n\n\nLa TV aporta 1,8 a 2,1 dB sobre la directa; el aleatorio + TV llega a 33,4 dB al 50 %.\n\n\n\nMedias sobre Truck, Train, DrJohnson y Playroom, 24 vistas cada una. Las barras muestran la variación entre escenas, que es grande: con Hadamard y TV al 5 por ciento el PSNR va de 23,9 dB en Train a 32,6 dB en DrJohnson. Una hipótesis es la resolución nativa frente a la rejilla; no está verificada."
+  },
+  {
+    "objectID": "slides/presentacion.html#la-escena-influye-más-que-el-método",
+    "href": "slides/presentacion.html#la-escena-influye-más-que-el-método",
+    "title": "Proyecto INF449",
+    "section": "La escena influye más que el método",
+    "text": "La escena influye más que el método\n\nResultados · Hadamard + TV por escena\n\n\n\n\n\n\n\nAl 5 %: 23,9 dB (Train) frente a 32,6 dB (DrJohnson).\n\n\nEl control de remuestreo muestra la misma separación: 37,7 y 38,1 dB frente a 44,9 y 43,5 dB.\n\n\nHipótesis (sin verificar): Deep Blending tiene mayor resolución nativa y se suaviza al llevarla a la rejilla.\n\n\n\n\nLas curvas son casi paralelas: reducir mediciones cuesta lo mismo en todas las escenas, pero el nivel base cambia. Conviene validar siempre con varias escenas."
+  },
+  {
+    "objectID": "slides/presentacion.html#qué-hace-cada-reconstrucción-con-la-misma-medición",
+    "href": "slides/presentacion.html#qué-hace-cada-reconstrucción-con-la-misma-medición",
+    "title": "Proyecto INF449",
+    "section": "Qué hace cada reconstrucción con la misma medición",
+    "text": "Qué hace cada reconstrucción con la misma medición\n\nResultados · Truck al 10 %\n\n\n\n\n\n\nAleatorio + directa: ruido sin estructura.\n\n\nHadamard + directa: imagen con artefactos de bloque.\n\n\nCon TV los bordes se limpian en ambos patrones.\n\n\n\nLa misma medición, cuatro reconstrucciones. La diferencia entre filas es el patrón; entre columnas, el método."
+  },
+  {
+    "objectID": "slides/presentacion.html#dgs-parte-de-una-nube-de-puntos-y-la-convierte-en-gaussianas",
+    "href": "slides/presentacion.html#dgs-parte-de-una-nube-de-puntos-y-la-convierte-en-gaussianas",
+    "title": "Proyecto INF449",
+    "section": "3DGS parte de una nube de puntos y la convierte en gaussianas",
+    "text": "3DGS parte de una nube de puntos y la convierte en gaussianas\n\nMotivación · De puntos a gaussianas [9]\n\n\n\n\n\nIlustración conceptual; sin fuente identificada.\n\n\n\n\nCOLMAP entrega las poses y una nube de puntos dispersa (136 029 puntos en Truck).\n\n\nCada punto se inicializa como una gaussiana 3D con color y opacidad.\n\n\nLa optimización las mueve, estira, divide y poda hasta reproducir las vistas.\n\n\n\n\nEs el punto de partida de 3DGS. La nube de Structure from Motion de Truck tiene 136 029 puntos; cada uno se convierte en una gaussiana y el control adaptativo de densidad añade y elimina gaussianas durante el entrenamiento."
+  },
+  {
+    "objectID": "slides/presentacion.html#el-destino-de-las-vistas-3d-gaussian-splatting",
+    "href": "slides/presentacion.html#el-destino-de-las-vistas-3d-gaussian-splatting",
+    "title": "Proyecto INF449",
+    "section": "El destino de las vistas: 3D Gaussian Splatting",
+    "text": "El destino de las vistas: 3D Gaussian Splatting\n\nMotivación · Del 2D al 3D [9]\n\n\n\n\n\nPipeline de 3D-GS. Figura tomada del material de ejemplo de la presentación; verificar su fuente antes de exponer.\n\n\n3DGS parte de una nube de puntos de Structure from Motion con COLMAP, coloca una gaussiana por punto, las proyecta, las rasteriza de forma diferenciable, compara el render con las imágenes y ajusta los parámetros. Además poda y densifica gaussianas durante el entrenamiento."
+  },
+  {
+    "objectID": "slides/presentacion.html#de-gaussianas-3d-a-una-imagen-proyectar-y-mezclar",
+    "href": "slides/presentacion.html#de-gaussianas-3d-a-una-imagen-proyectar-y-mezclar",
+    "title": "Proyecto INF449",
+    "section": "De gaussianas 3D a una imagen: proyectar y mezclar",
+    "text": "De gaussianas 3D a una imagen: proyectar y mezclar\n\nMotivación · Renderizado de 3DGS [9]\n\n\n\n\n\nVariante con proyección sobre la esfera unitaria. Fuente: material de ejemplo; verificar antes de exponer.\n\n\n\nLa escena es un conjunto de gaussianas 3D con color y opacidad.\n\n\nCada una se proyecta al plano de la imagen como una elipse 2D.\n\n\nSe mezclan con alfa, de adelante hacia atrás, para formar cada píxel.\n\n\n\nEs la misma escena Truck que usamos en los experimentos 2D. El render es diferenciable, así que la pérdida contra la imagen real ajusta posición, forma, color y opacidad de cada gaussiana."
+  },
+  {
+    "objectID": "slides/presentacion.html#cada-gaussiana-es-un-elipsoide-con-color-y-opacidad",
+    "href": "slides/presentacion.html#cada-gaussiana-es-un-elipsoide-con-color-y-opacidad",
+    "title": "Proyecto INF449",
+    "section": "Cada gaussiana es un elipsoide con color y opacidad",
+    "text": "Cada gaussiana es un elipsoide con color y opacidad\n\nMotivación · Representación de 3DGS [9]\n\n\n\nGaussiana 3D y covarianza\nG(\\mathbf{x})=\\exp\\!\\Big(-\\tfrac12(\\mathbf{x}-\\boldsymbol{\\mu})^{\\top}\\mathbf{\\Sigma}^{-1}(\\mathbf{x}-\\boldsymbol{\\mu})\\Big),\\quad \\mathbf{\\Sigma}=\\mathbf{R}\\mathbf{S}\\mathbf{S}^{\\top}\\mathbf{R}^{\\top}\nProyección a la imagen\n\\mathbf{\\Sigma}'=\\mathbf{J}\\mathbf{W}\\mathbf{\\Sigma}\\mathbf{W}^{\\top}\\mathbf{J}^{\\top}\n\n\nComposición \\alpha de i gaussianas ordenadas\nC=\\sum_{i}c_i\\,\\alpha_i\\prod_{j&lt;i}(1-\\alpha_j)\nPérdida de entrenamiento\n\\mathcal{L}=(1-\\lambda)\\,\\mathcal{L}_1+\\lambda\\,\\mathcal{L}_{\\text{D-SSIM}},\\quad \\lambda=0{,}2\n\n\n\n59 parámetros por gaussiana: posición (3), rotación (4), escala (3), opacidad (1) y armónicos esféricos (48).\n\n\nLa covarianza se factoriza en rotación y escala para mantenerla semidefinida positiva. La proyección usa el jacobiano de la transformación afín local, siguiendo el splatting EWA de Zwicker. El color se compone de adelante hacia atrás con alfa. La pérdida combina L1 y D-SSIM con lambda 0.2, como en el artículo de Kerbl."
+  },
+  {
+    "objectID": "slides/presentacion.html#cómo-se-conectan-la-spc-y-3dgs-en-este-proyecto",
+    "href": "slides/presentacion.html#cómo-se-conectan-la-spc-y-3dgs-en-este-proyecto",
+    "title": "Proyecto INF449",
+    "section": "Cómo se conectan la SPC y 3DGS en este proyecto",
+    "text": "Cómo se conectan la SPC y 3DGS en este proyecto\n\nMotivación · Flujo completo\n\n\n\n1 · Medir\nSimular la SPC en cada vista con razón r y reconstruirla (directa o TV).\n\n\n2 · Preparar\nConservar los nombres y poses COLMAP del dataset y filtrar images.bin al usar un subconjunto.\n\n\n3 · Entrenar y comparar\nEntrenar 3DGS con las vistas degradadas y evaluar contra el original: ¿cómo se propaga el error a 3D?\n\n\n\nReferencia del artículo de 3DGS en Truck: 25,19 dB / SSIM 0,879 / LPIPS 0,148 a 30 000 iteraciones, en una GPU A6000.\n\n\nEste trabajo cubre el paso 1. Los pasos 2 y 3 están implementados en el repositorio: un runner de entrenamiento con reanudación desde checkpoint y registro de VRAM. Falta ejecutarlos con las corridas SPC y validar primero el baseline contra el artículo."
+  },
+  {
+    "objectID": "slides/presentacion.html#alcance-limitaciones-y-conclusiones",
+    "href": "slides/presentacion.html#alcance-limitaciones-y-conclusiones",
+    "title": "Proyecto INF449",
+    "section": "Alcance, limitaciones y conclusiones",
+    "text": "Alcance, limitaciones y conclusiones\n\nAnálisis crítico y conclusiones\n\n\n\nAporta\nSimulación SPC cercana a la resolución nativa, con ruido de DMD, y comparación de patrones y reconstrucción.\n\n\nLimitaciones\nVistas ya capturadas (JPEG), medición en sRGB, escena estática, pocas vistas; en 3D, poses y nube del GT (cota optimista).\n\n\nSiguiente paso\nEjecutar 3DGS con las corridas SPC y medir la propagación 2D → 3D; re-estimar poses sin el GT.\n\n\n\nHadamard ordenado + TV es la mejor combinación en las tres métricas (34,6 dB al 50 %); la TV es imprescindible con patrones aleatorios (13,6 → 26,5 dB al 5 %).\n\n\nLa conclusión se apoya en el promedio de las cuatro escenas. Las limitaciones principales son que las vistas ya son imágenes capturadas y que para 3D se usarían las poses del dataset, algo que una SPC real no tendría."
   },
   {
     "objectID": "slides/presentacion.html#referencias",
     "href": "slides/presentacion.html#referencias",
     "title": "Proyecto INF449",
     "section": "Referencias",
-    "text": "Referencias\n\n\n[1] M. F. Duarte, M. A. Davenport, D. Takhar, J. N. Laska, T. Sun, K. F. Kelly y R. G. Baraniuk. Single-pixel imaging via compressive sampling. IEEE Signal Processing Magazine, 25(2), 2008. doi:10.1109/MSP.2007.914730\n[2] B. Kerbl, G. Kopanas, T. Leimkühler y G. Drettakis. 3D Gaussian Splatting for Real-Time Radiance Field Rendering. ACM Transactions on Graphics, 42(4), 2023. doi:10.1145/3592433\n[3] J. L. Schönberger y J.-M. Frahm. Structure-from-Motion Revisited. CVPR, 2016. doi:10.1109/CVPR.2016.445\n[4] A. Knapitsch, J. Park, Q.-Y. Zhou y V. Koltun. Tanks and Temples: Benchmarking Large-Scale Scene Reconstruction. ACM Transactions on Graphics, 36(4), 2017. doi:10.1145/3072959.3073599\n[5] Z. Wang, A. C. Bovik, H. R. Sheikh y E. P. Simoncelli. Image Quality Assessment: From Error Visibility to Structural Similarity. IEEE Transactions on Image Processing, 13(4), 2004. doi:10.1109/TIP.2003.819861"
+    "text": "Referencias\n\nRespaldo · Numeración de esta presentación\n\n\n[1] Duarte et al., «Single-pixel imaging via compressive sampling», IEEE SPM, 2008.\n[2] Edgar, Gibson y Padgett, «Principles and prospects for single-pixel imaging», Nat. Photonics, 2019.\n[3] Donoho, «Compressed sensing», IEEE Trans. Inf. Theory, 2006.\n[4] Sun et al., «3D computational imaging with single-pixel detectors», Science, 2013.\n[5] Zhang et al., «Hadamard single-pixel imaging versus Fourier single-pixel imaging», Opt. Express, 2017.\n[6] Yu, «Super sub-Nyquist single-pixel imaging by means of cake-cutting Hadamard basis sort», Sensors, 2019.\n[7] Rudin, Osher y Fatemi, «Nonlinear total variation based noise removal algorithms», Physica D, 1992.\n[8] Beck y Teboulle, «A fast iterative shrinkage-thresholding algorithm», SIAM J. Imaging Sci., 2009.\n[9] Kerbl et al., «3D Gaussian Splatting for Real-Time Radiance Field Rendering», ACM TOG, 2023.\n[10] Knapitsch et al., «Tanks and Temples», ACM TOG, 2017; Hedman et al., «Deep Blending», ACM TOG, 2018.\n\n\nRespaldo: no se presenta salvo que pidan una referencia."
+  },
+  {
+    "objectID": "slides/presentacion.html#section-1",
+    "href": "slides/presentacion.html#section-1",
+    "title": "Proyecto INF449",
+    "section": "",
+    "text": "INF449 · Fotografía Computacional · Proyecto final\n\n\nComprimir la captura:\ncámara de un píxel y reconstrucción 2D\n\n\nFrancisco Alfaro · Ayrton Perez\n\n\nUniversidad Técnica Federico Santa María · Departamentos de Electrónica e Informática\nCódigo: github.com/fralfaro/inf449-proyecto\n\n\n\nMuchas gracias; quedamos a disposición para sus preguntas."
   },
   {
     "objectID": "index.html",
