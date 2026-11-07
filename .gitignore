@@ -236,3 +236,7 @@ latex/**/*.out
 latex/**/*.toc
 latex/ejemplo_informe
 slides/slide_ejemplos
+/.quarto/
+**/*.quarto_ipynb
+_site
+slides/presentacion.html
