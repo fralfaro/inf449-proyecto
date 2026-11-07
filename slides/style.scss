@@ -3,16 +3,19 @@ $body-bg: #f5f7fb;
 $body-color: #182538;
 $link-color: #0f8b8d;
 $accent: #0f8b8d;
-$accent-green: #2e9f6b;
-$accent-orange: #ef9b3e;
+$highlight: #d9731a;
 $primary: #183b56;
 $muted: #55667c;
-$dark: #102a43;
+$line: #dce5ee;
+$teal-wash: #edf7f7;
+$orange-wash: #fdf1e2;
 
-// Tamaños mínimos legibles (lienzo 1600 × 900)
-$fs-small: 19px;   // pies de figura, etiquetas
-$fs-card: 22px;    // texto en tarjetas
-$fs-table: 21px;
+// Tamaños sobre el lienzo de 1600 × 900. Con margin 0.04, a 1280 × 720 la escala
+// es 0,768: 24 px de lienzo se proyectan como 18,4 px.
+$fs-small: 24px;   // mínimo: pies de figura, etiquetas
+$fs-point: 33px;   // frases junto a la imagen
+$fs-table: 24px;
+$fs-chrome: 19px;  // pie y numeración: no los escala reveal
 
 /*-- scss:rules --*/
 
@@ -26,118 +29,447 @@ $fs-table: 21px;
 
 .reveal .slides { text-align: left; }
 
-.reveal h1,
-.reveal h2,
-.reveal h3,
-.reveal h4 {
+.reveal h2 {
   color: $primary;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 1.5em;
   font-weight: 800;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  margin: 38px 0 0.45em;
+  text-transform: none;
 }
 
-.reveal h2 { font-size: 1.55em; margin: 0 0 0.35em; }
-.reveal h3 { font-size: 1.05em; margin: 0.2em 0 0.45em; }
-.reveal h4 { font-size: 0.85em; margin: 0.3em 0; }
-.reveal p,
-.reveal li { line-height: 1.3; }
-
-.reveal code {
-  background: rgba(239, 155, 62, 0.12);
-  border-radius: 0.25em;
-  color: #a4501a;
-  padding: 0.08em 0.25em;
-}
+.reveal p { line-height: 1.3; margin: 0.35em 0; }
 
 .reveal .slide-number {
   background: transparent;
   color: rgba(24, 59, 86, 0.7);
-  font-size: $fs-small;
+  font-size: $fs-chrome;
 }
 
 .reveal .footer {
   color: rgba(24, 59, 86, 0.72);
-  font-size: $fs-small;
+  font-size: $fs-chrome;
 }
 
+.reveal .slide-logo { max-height: 2.2em !important; }
+
+// Etiqueta de sección, sobre el título de cada diapositiva
 .eyebrow {
   color: $accent;
   font-size: $fs-small;
   font-weight: 800;
-  letter-spacing: 0.17em;
-  margin-bottom: 0.3em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
-// === FIGURAS Y PIES ===
-.fig-caption,
+.reveal .eyebrow p { margin: 0; }
+
+.reveal .slides section > .eyebrow {
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
+// === IMÁGENES ===
+.image-frame {
+  background: white;
+  border: 1px solid $line;
+  border-radius: 15px;
+  box-shadow: 0 12px 28px rgba(16, 42, 67, 0.1);
+  overflow: hidden;
+  padding: 0.35em;
+}
+
+.reveal .image-frame p { margin: 0; }
+
+.image-frame img {
+  display: block;
+  margin: 0 auto !important;
+  max-height: 600px;
+  object-fit: contain;
+  width: 100%;
+}
+
 .image-caption {
   color: $muted;
   font-size: $fs-small;
   line-height: 1.3;
-  padding: 0.45em 0.6em 0.2em;
+  padding: 0.3em 0.5em 0.1em;
 }
 
-.fig-source { color: $muted; font-style: italic; }
+// === FIG. 2: EL EJE DE LA PRESENTACIÓN ===
+// Un solo PNG (2806 × 1035) recortado por CSS. Las zonas se expresan en una grilla
+// de 2000 × 738, con la misma proporción del PNG, y coinciden con los trazos SVG
+// de la vista general y del minimapa.
+.z-pyramid { --x: 1605; --y: 100; --w: 390; --h: 600; }
 
-// Fuente aún no verificada: visible para no olvidarla
-.source-pending {
-  background: rgba(239, 155, 62, 0.16);
-  border-radius: 4px;
-  color: #8a4413;
-  font-style: italic;
-  padding: 0 0.3em;
+// --mask tapa con blanco lo que cae dentro del rectángulo y no pertenece a la zona
+.z-fisher {
+  --x: 385; --y: 3; --w: 1207; --h: 242;
+  --mask: linear-gradient(white, white) left bottom / 42% 55% no-repeat;
 }
 
-// Ranura para figura real: muestra un marcador si la imagen aún no existe
-.slot {
-  align-items: center;
-  background: repeating-linear-gradient(45deg, #e9eff4 0 12px, #f6f9fb 12px 24px);
-  border: 2px dashed #b8c7d6;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
+.z-caq {
+  --x: 305; --y: 110; --w: 557; --h: 568;
+  --mask: linear-gradient(white, white) left top / 5.4% 69.5% no-repeat,
+    linear-gradient(white, white) right top / 5.7% 75.7% no-repeat,
+    linear-gradient(white, white) right bottom / 38.1% 3.2% no-repeat;
+}
+
+.reveal .fig2-crop {
+  aspect-ratio: var(--w) / var(--h);
+  background: white;
+  border: 4px solid $highlight;
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(16, 42, 67, 0.1);
+  box-sizing: content-box;
+  margin: 0;
   overflow: hidden;
   position: relative;
 }
 
-.slot::before {
-  background: $dark;
-  border-radius: 6px;
-  color: white;
-  content: attr(data-label);
-  font-size: $fs-small;
-  font-weight: 700;
-  padding: 0.3em 0.6em;
+.reveal .fig2-crop::after {
+  background: var(--mask, none);
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
 }
 
-.slot img {
+.reveal .fig2-crop img {
+  height: auto;
+  left: calc(-100% * var(--x) / var(--w));
+  margin: 0;
+  max-height: none !important;
+  max-width: none !important;
+  position: absolute;
+  top: calc(-100% * var(--y) / var(--h));
+  width: calc(100% * 2000 / var(--w));
+}
+
+// Se apoya en el hueco que deja la máscara de la zona de Fisher
+.reveal .fig2-crop .crop-note {
+  align-items: center;
+  box-sizing: border-box;
+  color: $primary;
+  display: flex;
+  font-size: $fs-point;
+  font-weight: 700;
+  height: 55%;
+  left: 0;
+  line-height: 1.22;
+  padding: 0 1em 0 0.8em;
+  position: absolute;
+  top: 45%;
+  width: 41%;
+  z-index: 1;
+}
+
+.reveal .fig2-crop .crop-src {
+  bottom: 0.3em;
+  color: $muted;
+  font-size: $fs-small;
+  left: 0.8em;
+  position: absolute;
+  z-index: 1;
+}
+
+// Figura completa con trazos SVG encima: Fig. 2 con sus zonas y pipeline de 3D-GS
+.reveal .fig-full {
   background: white;
+  border: 1px solid $line;
+  border-radius: 15px;
+  box-shadow: 0 12px 28px rgba(16, 42, 67, 0.1);
+  margin: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.reveal .fig-full img,
+.reveal .fig2-map img {
+  display: block;
+  height: auto;
+  margin: 0;
+  max-height: none !important;
+  max-width: none !important;
+  width: 100%;
+}
+
+.reveal .fig-full svg,
+.reveal .fig2-map svg {
   height: 100%;
   inset: 0;
-  margin: 0 !important;
-  max-height: none !important;
-  object-fit: contain;
   position: absolute;
   width: 100%;
 }
 
-// === PORTADA ===
-.title-hero {
-  align-items: center;
+.fig-full .ring {
+  fill: rgba(217, 115, 26, 0.07);
+  stroke: $highlight;
+  stroke-linejoin: round;
+  stroke-width: 6;
+}
+
+.fig-full .badge { fill: $highlight; }
+
+.fig-full .badge-n {
+  fill: white;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 40px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+// Pipeline de 3D-GS: tapa el recuadro de «5 learnable parameters», que contradice
+// los 59 valores por gaussiana. Coordenadas sobre la grilla de 2000 × 735.
+.reveal .fig-pipeline::after {
+  background: white;
+  content: "";
+  height: 22.8%;
+  left: 25.2%;
+  position: absolute;
+  top: 68.5%;
+  width: 19.6%;
+}
+
+.reveal .fig-pipeline { border: 0; border-radius: 0; box-shadow: none; }
+.reveal .pipeline-frame + .points { margin-top: 0.5em; }
+
+// Minimapa: sitúa cada zoom dentro de la figura completa
+.reveal .slides section > .fig2-map {
+  background: white;
+  border: 1px solid $line;
+  border-radius: 8px;
+  margin: 0;
+  overflow: hidden;
+  position: absolute;
+  right: 34px;
+  top: 0;
+  width: 220px;
+}
+
+.fig2-map .dim { fill: rgba(245, 247, 251, 0.7); fill-rule: evenodd; }
+.fig2-map .ring { fill: none; stroke: $highlight; stroke-linejoin: round; stroke-width: 14; }
+
+// Deja espacio al minimapa
+.reveal section.has-map > h2 { max-width: 1290px; }
+
+// Figura y figura, lado a lado
+.fig-row { align-items: stretch; display: flex; gap: 22px; justify-content: center; }
+.reveal .fig-row .fig2-crop { flex: none; }
+.reveal .fig-row .image-frame { flex: none; }
+
+.pyramid-crop { height: 572px; }
+.crop-col > .image-caption 
+.fig3-frame img { height: 555px; max-height: none; width: auto; }
+
+// Resumen de la vista general: una línea, con los números de las zonas
+.parts { display: grid; gap: 0.8em; grid-template-columns: auto auto auto; justify-content: space-between; margin-top: 0.6em; }
+.reveal .parts p { font-size: 32px; line-height: 1.2; margin: 0; white-space: nowrap; }
+.reveal .parts strong { color: $primary; }
+
+.reveal .parts b {
+  background: $highlight;
+  border-radius: 50%;
+  color: white;
+  display: inline-block;
+  font-size: 26px;
+  font-weight: 800;
+  height: 1.5em;
+  line-height: 1.5em;
+  margin-right: 0.45em;
+  text-align: center;
+  vertical-align: 0.08em;
+  width: 1.5em;
+}
+
+// === FRASES JUNTO A LA IMAGEN ===
+.reveal .points p { font-size: $fs-point; line-height: 1.24; margin: 0; }
+
+.reveal .points-row {
+  column-gap: 1.1em;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 0.55em;
+}
+
+.reveal .points-stack > div + div { margin-top: 0.85em; }
+.reveal .points strong { color: $primary; }
+
+// Lámina de problema y objetivo: Problema → Brecha → Objetivo, con el objetivo como
+// tarjeta destacada, y la figura a todo el ancho debajo
+.reveal .problem-text {
+  display: grid;
+  gap: 40px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.reveal .problem-text > div {
+  background: white;
+  border: 1px solid $line;
+  border-radius: 15px;
+  border-top: 6px solid $highlight;
+  box-shadow: 0 10px 24px rgba(16, 42, 67, 0.08);
+  box-sizing: border-box;
+  padding: 0.55em 0.75em 0.65em;
+  position: relative;
+}
+
+// La flecha pertenece a la tarjeta que introduce: aparecen juntas
+.reveal .problem-text > div + div::before {
+  background: $highlight;
+  border-radius: 50%;
+  color: white;
+  content: "→";
+  font-size: 22px;
+  font-weight: 800;
+  height: 36px;
+  left: -38px;
+  line-height: 34px;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+}
+
+.reveal .problem-text p { font-size: 28px; line-height: 1.24; margin: 0; }
+.reveal .problem-text .kicker { font-size: $fs-small; margin-bottom: 0.2em; }
+.reveal .problem-text > div:nth-child(1) .kicker,
+.reveal .problem-text > div:nth-child(1) strong { color: #a4501a; }
+.reveal .problem-text > div:nth-child(2) { border-top-color: #8294a6; }
+.reveal .problem-text > div:nth-child(2) .kicker { color: $muted; }
+.reveal .problem-text > div:nth-child(2) strong { color: $primary; }
+
+.reveal .problem-text > div:nth-child(3) {
   background: linear-gradient(135deg, #102a43 0%, #183b56 58%, #0f8b8d 150%);
-  border-radius: 24px;
+  border: 0;
+  box-shadow: 0 12px 28px rgba(16, 42, 67, 0.2);
+  padding-top: calc(0.55em + 6px);
+}
+
+.reveal .problem-text > div:nth-child(3) p { color: white; }
+.reveal .problem-text > div:nth-child(3) .kicker { color: #8fe0dc; }
+.reveal .problem-text > div:nth-child(3) strong { color: #ffd3a1; }
+
+.reveal .problem-illustration { margin-top: 20px; padding: 0.2em; }
+.reveal .problem-illustration img { height: 372px; max-height: none; width: auto; }
+
+// Lámina de CAQ: la zona a la izquierda, las frases a la derecha
+.caq-row { align-items: center; display: grid; gap: 1.5em; grid-template-columns: auto minmax(0, 1fr); }
+.caq-crop { height: 630px; }
+.reveal .points .equation-card { margin-top: 0.5em; padding: 0.1em 0.5em; }
+
+// === LÁMINA DE FISHER ===
+.fisher-row {
+  align-items: stretch;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-top: 16px;
+}
+
+.fig4-frame img { height: 296px; max-height: none; width: auto; }
+
+.reveal .equation-card {
+  background: $teal-wash;
+  border: 1px solid $line;
+  border-left: 5px solid $accent;
+  border-radius: 12px;
+  overflow: visible;
+  padding: 0.35em 0.75em;
+}
+
+.reveal .equation-card p { font-size: $fs-point; margin: 0.15em 0; }
+.reveal .equation-card .eq-label { color: $primary; display: block; font-size: 28px; font-weight: 700; }
+.reveal .equation-card .katex-display { margin: 0.25em 0 0.45em; overflow: visible; }
+.reveal .equation-card .katex-display > .katex { font-size: 1.12em; }
+
+// === RESULTADOS ===
+.reveal .table-roomy { font-size: 31px; }
+.reveal .table-roomy td,
+.reveal .table-roomy th { padding: 0.36em 0.45em; }
+
+.result-foot {
+  align-items: center;
+  display: grid;
+  gap: 1.3em;
+  grid-template-columns: auto minmax(0, 1fr);
+  margin-top: 0.6em;
+}
+
+.reveal .result-foot p { font-size: $fs-point; line-height: 1.24; margin: 0; }
+
+.stat-value {
+  color: $highlight;
+  display: block;
+  font-size: 84px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.stat-label { color: $muted; display: block; font-size: $fs-small; white-space: nowrap; }
+
+// === CIERRE ===
+.closing-points { display: grid; gap: 1.1em; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 26px; }
+.reveal .closing-points p { font-size: $fs-point; line-height: 1.24; margin: 0; }
+.reveal .closing-points strong { color: $primary; }
+
+.kicker {
+  color: $accent;
+  display: block;
+  font-size: $fs-small;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.2em;
+  text-transform: uppercase;
+}
+
+.closing-row {
+  align-items: stretch;
+  display: grid;
+  gap: 22px;
+  grid-template-columns: 1120px minmax(0, 1fr);
+  margin-top: 40px;
+}
+
+.closing-qa {
+  align-content: center;
+  background: linear-gradient(135deg, #102a43 0%, #183b56 58%, #0f8b8d 150%);
+  border-radius: 15px;
   color: white;
   display: grid;
-  gap: 1.2em;
-  grid-template-columns: 1fr 1fr;
-  height: 700px;
+  padding: 0 0.9em;
+}
+
+.reveal .closing-qa p { color: #e8f1f8; font-size: 30px; margin: 0.25em 0; }
+.reveal .closing-qa .qa-big { color: white; font-size: 60px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+
+// === PORTADA ===
+.reveal section.hero-slide > h2 { display: none; }
+
+.title-hero {
+  align-content: center;
+  background: linear-gradient(135deg, #102a43 0%, #183b56 58%, #0f8b8d 150%);
+  border-radius: 24px;
+  box-sizing: border-box;
+  color: white;
+  display: grid;
+  gap: 0;
+  grid-template-columns: 1fr;
+  height: 750px;
+  margin-top: 42px;
   overflow: hidden;
-  padding: 1.4em 1.6em;
+  padding: 1.6em 2.2em;
   position: relative;
 }
 
 .title-hero::after {
-  background: radial-gradient(circle, rgba(255,255,255,0.16) 0 2px, transparent 3px) 0 0 / 24px 24px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.16) 0 2px, transparent 3px) 0 0 / 24px 24px;
   content: "";
   inset: 0;
   opacity: 0.28;
@@ -145,340 +477,110 @@ $fs-table: 21px;
   position: absolute;
 }
 
-.title-text,
-.title-visual { position: relative; z-index: 1; }
+.title-hero > div { position: relative; z-index: 1; }
 
 .reveal .title-hero .eyebrow { color: #8fe0dc; }
-
-.reveal .title-hero h3 {
-  color: #ffffff;
-  font-size: 1.9em;
-  line-height: 1.05;
-  margin: 0.5em 0 0.6em;
-}
-
 .reveal .title-hero p { color: #e8f1f8; font-size: 0.85em; }
-.reveal .title-hero strong { color: #ffffff; }
+.reveal .title-hero .eyebrow p { font-size: $fs-small; }
+.reveal .title-hero strong { color: white; }
 
-.title-visual {
-  background: rgba(255,255,255,0.08);
-  border: 4px solid rgba(255,255,255,0.75);
-  border-radius: 18px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.26);
-  display: flex;
-  flex-direction: column;
-  height: 540px;
-  overflow: hidden;
-}
-
-.title-visual .gif-box { flex: 1; min-height: 0; }
-
-.title-visual img {
-  display: block;
-  height: 100%;
-  margin: 0 !important;
-  max-height: none !important;
-  object-fit: contain;
-  width: 100%;
-}
-
-.title-visual .fig-caption { background: rgba(16,42,67,0.85); color: #e8f1f8; }
-.title-visual .source-pending { background: rgba(239,155,62,0.3); color: #ffe2c2; }
-.title-visual .fig-source { color: #c9d8e6; }
-
-// === LAYOUT E IMÁGENES ===
-.columns { align-items: center; gap: 1.1em; }
-
-.image-frame {
-  background: white;
-  border: 1px solid #dce5ee;
-  border-radius: 15px;
-  box-shadow: 0 12px 28px rgba(16, 42, 67, 0.10);
-  overflow: hidden;
-  padding: 0.35em;
-}
-
-.image-frame img {
-  display: block;
-  margin: 0 auto;
-  max-height: 600px;
-  object-fit: contain;
-  width: 100%;
-}
-
-.reveal .image-frame p { margin: 0; }
-
-.hero-frame img { max-height: 560px; }
-.spc-frame img { max-height: 400px; }
-.notebook-wide-frame img { max-height: 330px; }
-.hadamard-frame img { max-height: 640px; }
-.gaussian-frame img { max-height: 470px; }
-.reveal .gauss-eq { font-size: 1.15em; margin-top: 0.8em; }
-.gif-frame img { max-height: 600px; }
-
-.small-inset-frame { margin-top: 0.5em; padding: 0.25em; }
-.small-inset-frame img { max-height: 170px; object-fit: contain; }
-
-.reveal .problem-slide,
-.reveal .colmap-slide { align-items: center; }
-
-.tag-row { display: flex; flex-wrap: wrap; gap: 0.35em; margin-top: 0.8em; }
-
-.tag-row span {
-  background: #e6f4f4;
-  border-radius: 999px;
-  color: #145d5f;
-  font-size: $fs-small;
-  padding: 0.4em 0.75em;
-}
-
-// === TARJETAS ===
-.accent-card,
-.callout-note,
-.callout-large,
-.equation-card,
-.step-card,
-.link-panel,
-.status-card,
-.diagram-panel {
-  background: white;
-  border: 1px solid #dce5ee;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(16, 42, 67, 0.06);
-}
-
-.accent-card { border-left: 5px solid $accent; margin-top: 0.7em; padding: 0.6em 0.85em; }
-
-.accent-card strong {
-  color: $accent;
-  display: block;
-  font-size: $fs-small;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.25em;
-  text-transform: uppercase;
-}
-
-.reveal .accent-card p { font-size: $fs-card; margin: 0; }
-
-.equation-card {
-  background: #edf7f7;
-  border-left: 5px solid $accent;
-  font-size: 0.8em;
-  margin-top: 0.6em;
-  padding: 0.5em 0.75em;
-}
-
-.reveal .equation-card p,
-.reveal .equation-card li { font-size: $fs-card; margin: 0.3em 0 0; }
-.reveal .equation-card ul { margin: 0.3em 0 0 1em; }
-
-.callout-note {
-  border-left: 5px solid $accent-orange;
-  font-size: $fs-card;
-  margin-top: 0.6em;
-  padding: 0.5em 0.8em;
-}
-
-.reveal .callout-note p { margin: 0; }
-
-.callout-large {
-  border-left: 7px solid $accent-orange;
-  font-size: 0.85em;
-  margin-top: 0.9em;
-  padding: 0.7em 0.9em;
-}
-
-.metric-row { background: #edf7f7; border-radius: 10px; margin-top: 0.8em; padding: 0.5em; }
-
-.metric {
-  color: $primary;
-  display: block;
-  font-size: 1.45em;
+.reveal .title-hero .hero-paper {
+  color: white;
+  font-size: 60px;
   font-weight: 800;
-  line-height: 1.1;
-  text-align: center;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  margin: 0.45em 0 0.5em;
 }
 
-.metric-label { color: $muted; display: block; font-size: $fs-small; text-align: center; }
+.reveal .title-hero .hero-authors { color: white; font-size: 40px; font-weight: 700; }
+.reveal .title-hero .hero-authors p { color: white; font-size: 40px; margin: 0; }
+.reveal .title-hero .hero-meta { margin-top: 0.35em; }
+.reveal .title-hero .hero-meta p { font-size: 28px; margin: 0.25em 0; }
 
-// === COMPARACIÓN SPC ===
-.condition-strip {
-  display: grid;
-  gap: 0.5em;
-  grid-template-columns: repeat(5, 1fr);
-  margin: 0.3em 0 0.6em;
+.reveal .title-hero .hero-presenter {
+  border-top: 2px solid rgba(255, 255, 255, 0.35);
+  margin-top: 1.1em;
+  padding-top: 0.7em;
 }
 
-.condition-card {
-  background: white;
-  border: 1px solid #dce5ee;
-  border-radius: 11px;
-  margin: 0;
-  padding: 0.35em;
-  text-align: center;
-}
+.reveal .title-hero .hero-presenter p { font-size: 26px; margin: 0; }
 
-.condition-card .condition-image { aspect-ratio: 1 / 1; height: 220px; margin: 0 auto; width: 220px; }
-.condition-base .condition-image { border-color: $accent; }
-
-.condition-card figcaption strong,
-.condition-card figcaption span { display: block; }
-.condition-card figcaption strong { color: $primary; font-size: $fs-card; margin-top: 0.3em; }
-.condition-card figcaption span { color: $muted; font-size: $fs-small; margin-top: 0.1em; }
-.condition-card .metric-caption { color: $primary !important; font-variant-numeric: tabular-nums; font-weight: 600; }
-
-.comparison-bottom { align-items: stretch; }
-
-.comparison-reference-frame img.comparison-reference {
-  height: 250px;
-  object-fit: contain;
-  width: 100%;
-}
+// === TABLAS ===
+.reveal .data-table td,
+.reveal .data-table th { padding: 0.42em 0.3em; }
+.reveal .table-lg { font-size: 28px; }
 
 .reveal table {
   background: white;
+  border-collapse: collapse;
   border-radius: 8px;
   font-size: $fs-table;
   overflow: hidden;
   width: 100%;
 }
 
-.reveal table th { background: #e8f3f4; color: $primary; }
+.reveal table th { background: #e8f3f4; color: $primary; font-weight: 700; }
+
 .reveal table td,
-.reveal table th { padding: 0.35em 0.55em; }
-.reveal td.pending { color: #8a4413; font-style: italic; }
-
-// === GAUSSIANAS ===
-.parameter-grid {
-  display: grid;
-  gap: 0.45em;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: 0.7em 0;
-}
-
-.parameter-grid .param {
-  background: white;
-  border: 1px solid #dce5ee;
-  border-radius: 8px;
-  border-top: 5px solid $accent;
-  padding: 0.4em 0.3em;
+.reveal table th {
+  border-bottom: 1px solid $line;
+  font-variant-numeric: tabular-nums;
+  padding: 0.34em 0.42em;
   text-align: center;
 }
 
-.reveal .parameter-grid .param p { margin: 0; }
-.parameter-grid .param-symbol { color: $primary; display: block; font-family: "STIX Two Math", "Times New Roman", serif; font-size: 1.35em; font-style: italic; }
-.parameter-grid .param-label { color: $muted; display: block; font-size: $fs-small; }
+.reveal table td:first-child,
+.reveal table th:first-child { text-align: left; white-space: nowrap; }
 
-// === COLMAP ===
-.diagram-panel { background: #102a43; color: white; padding: 0.5em; }
+.reveal table td.group-start,
+.reveal table th.group-start { border-left: 2px solid #c7d6e2; }
 
-.camera-orbit {
-  background: radial-gradient(ellipse at 50% 64%, rgba(15,139,141,0.55) 0 16%, transparent 17%), linear-gradient(145deg, #183b56, #102a43);
-  border: 1px solid rgba(255,255,255,0.24);
-  border-radius: 9px;
-  height: 400px;
-  position: relative;
-}
+.reveal table tr.baseline td { background: #f3f5f8; color: $muted; }
+.reveal table tr.ours td { background: $orange-wash; font-weight: 700; }
+.reveal table tr.ours td:first-child { color: $primary; }
 
-.camera {
-  background: $accent-orange;
-  border-radius: 5px;
-  color: #102a43;
+.reveal table td.best,
+.reveal table tr.ours td.best { background: #f7c48b; color: #4a2507; font-weight: 800; }
+.reveal table td.second,
+.reveal table tr.ours td.second { background: #d3ecec; color: #0b4a4c; }
+
+.table-legend {
+  align-items: center;
+  color: $muted;
+  display: flex;
+  flex-wrap: wrap;
   font-size: $fs-small;
-  font-weight: 800;
-  padding: 0.3em 0.5em;
-  position: absolute;
+  gap: 0.9em;
+  margin-top: 0.45em;
 }
 
-.camera-a { left: 5%; top: 42%; }
-.camera-b { right: 5%; top: 42%; }
-.camera-c { bottom: 5%; left: 50%; transform: translateX(-50%); }
-
-.point-cloud {
-  color: #a9e2df;
-  font-size: 2.2em;
-  left: 50%;
-  letter-spacing: 0.08em;
-  line-height: 1;
-  position: absolute;
-  top: 10%;
-  transform: translateX(-50%);
-  white-space: nowrap;
+.table-legend i {
+  border-radius: 4px;
+  display: inline-block;
+  height: 0.85em;
+  margin-right: 0.35em;
+  vertical-align: -0.1em;
+  width: 1.3em;
 }
 
-.point-cloud-label {
-  color: #a9e2df;
-  font-size: $fs-small;
-  left: 50%;
-  position: absolute;
-  top: 27%;
-  transform: translateX(-50%);
-}
-
-.scene-object {
-  border: 2px solid #a9e2df;
-  border-radius: 50%;
-  color: white;
-  font-size: $fs-card;
-  left: 50%;
-  padding: 1em 1.1em;
-  position: absolute;
-  top: 64%;
-  transform: translate(-50%, -50%);
-}
-
-.panel-label { color: rgba(255,255,255,0.85); font-size: $fs-small; padding: 0.5em 0.2em 0.1em; }
-
-.colmap-figure .slot { height: 400px; }
-.colmap-figure > img { height: 400px; max-height: 400px; object-fit: cover; width: 100%; }
-
-// === BASELINE / SPC ===
-.reveal .three-way { display: grid; gap: 0.8em; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.reveal .three-way > .column { width: auto !important; }
-
-.step-card { border-top: 6px solid $accent; height: 100%; min-height: 440px; padding: 0.9em; }
-.reveal .step-card h3 { font-size: 1em; margin: 0.3em 0; }
-.reveal .step-card p { font-size: 0.8em; }
-.step-neutral { border-top-color: #7c91a5; }
-.step-accent { border-top-color: $accent; }
-.step-orange { border-top-color: $accent-orange; }
-.reveal .step-card .step-number { color: $accent; font-size: $fs-card; font-weight: 800; letter-spacing: 0.1em; }
-
-// === MÉTRICAS ===
-.chart-grid { display: grid; gap: 0.5em; grid-template-columns: 1fr 1fr; }
-.chart-figure { margin: 0; }
-.chart-wide { grid-column: 1 / -1; }
-.chart-wide img { max-height: 390px; object-fit: contain; width: 100%; }
-.chart-figure .slot { height: 480px; }
-.metric-legend { color: $muted; font-size: $fs-small; margin-top: 0.5em; }
-.metric-legend b { color: $primary; }
-
-// === ESTADO DEL PROYECTO ===
-.status-grid { display: grid; gap: 0.7em; grid-template-columns: repeat(3, 1fr); margin-top: 0.4em; }
-.status-card { border-top: 7px solid $accent-green; min-height: 560px; padding: 0.7em 0.9em; }
-.status-card.status-progress { border-top-color: $accent-orange; }
-.status-card.status-pending { border-top-color: #7c91a5; }
-.status-title { display: block; font-size: 0.95em; font-weight: 800; margin-bottom: 0.2em; }
-.status-done .status-title { color: $accent-green; }
-.status-progress .status-title { color: #b8661c; }
-.status-pending .status-title { color: #55667c; }
-.reveal .status-card ul { margin: 0 0 0 1em; }
-.reveal .status-card li { font-size: 0.82em; margin: 0.35em 0; }
-
-// === CIERRE ===
-.link-panel { padding: 0.75em 0.9em; }
-.link-panel .link-heading { color: $accent; font-size: 0.85em; font-weight: 800; margin-bottom: 0.4em; }
-.reveal .link-panel li { font-size: $fs-card; margin: 0.35em 0; }
-.closing-line { color: $accent; font-size: 0.85em; font-weight: 800; margin-top: 0.8em; text-align: center; }
-
-.reveal ol li { margin: 0.35em 0; }
+.table-legend i.best { background: #f7c48b; }
+.table-legend i.second { background: #d3ecec; }
 
 // === REFERENCIAS ===
-.reveal .references { font-size: $fs-card; }
-.reveal .references p { line-height: 1.35; margin: 0 0 0.7em; padding-left: 2.2em; text-indent: -2.2em; }
+.reveal .references { columns: 2; column-gap: 1.2em; }
 
-// === MERMAID ===
-:root,
-.reveal { --mermaid-font-family: "Avenir Next", "Segoe UI", sans-serif; }
+.reveal .references p {
+  break-inside: avoid;
+  font-size: 27px;
+  line-height: 1.25;
+  margin: 0 0 0.5em;
+}
 
-.reveal .mermaid { font-size: 0.85em; }
+// === Extras del proyecto SPC ===
+.two-col { align-items: center; display: grid; gap: 32px; grid-template-columns: 1fr 1fr; margin-top: 30px; min-height: 650px; }
+.two-col > * { min-width: 0; }
+.two-col .equation-card .katex-display { font-size: 1.15em; }
+.fig-wide img { max-height: 540px; object-fit: contain; width: 100%; }
+.two-col .image-frame img { max-height: 640px; object-fit: contain; width: 100%; }
+.reveal .note-box { background: $orange-wash; border-left: 6px solid $highlight; border-radius: 10px; font-size: $fs-point; margin-top: 0.6em; padding: 0.4em 0.8em; }

@@ -1,49 +1,92 @@
-# Proyecto Final
+# Códigos del proyecto
 
-## Flujo recomendado en Google Colab
+| Archivo | Contenido |
+|---|---|
+| `01_spc_simulacion_reconstruccion.ipynb` | Pasos 1 y 2: mediciones SPC, reconstrucción y métricas 2D |
+| `02_gaussian_splatting.ipynb` | Pasos 3 y 4: escenas COLMAP, entrenamiento 3DGS y comparación |
+| `gs_train_runner.py` | Entrena y evalúa una escena en un proceso propio, con reanudación y registro de VRAM y temperatura |
+| `gaussian_splatting_colab.ipynb` | Referencia original del flujo de compilación de 3DGS en Colab |
+| `3d_gaussian_splatting_low.pdf` | Paper de 3DGS (Kerbl et al., 2023) |
+| `old/` | Intentos previos, solo como referencia. Las lecciones están en `docs/00_plan_y_decisiones.md` |
 
-El proyecto está separado en dos notebooks independientes:
+## Requisitos
 
-1. [`01_single_pixel_camera_colab.ipynb`](01_single_pixel_camera_colab.ipynb) monta Drive, simula la Single Pixel Camera con patrones Hadamard y guarda las vistas reconstruidas junto con las poses COLMAP.
-2. [`02_gaussian_splatting_colab.ipynb`](02_gaussian_splatting_colab.ipynb) carga ese resultado desde Drive, prepara las poses, entrena Gaussian Splatting y guarda los renders y métricas.
+Probado en Windows 11 con RTX 4060 Laptop (8 GB), Python 3.11, Visual Studio 2022 (MSVC 14.42) y CUDA Toolkit 12.8.
 
-El primer notebook deja el siguiente contrato de datos:
+Los datasets van en `data/tandt_db/` y el repo oficial, con sus submódulos, en `third_party/gaussian-splatting/`.
 
-```text
-Mi unidad/inf449-portafolio/proyecto-final/
-└── spc_runs/spc_pilot/
-    ├── manifest.json
-    ├── summary_2d.csv
-    ├── original/images/ + sparse/0/
-    ├── spc_010/images/ + sparse/0/
-    ├── spc_025/images/ + sparse/0/
-    └── spc_050/images/ + sparse/0/
+## Instalación
+
+```powershell
+uv venv --python 3.11 .venv
+uv pip install --python .venv\Scripts\python.exe "torch==2.11.0+cu128" "torchvision==0.26.0+cu128" --index-url https://download.pytorch.org/whl/cu128
+uv pip install --python .venv\Scripts\python.exe -r requirements.txt
 ```
 
-El Notebook 1 descarga automáticamente `tandt_db.zip` desde Hugging Face en
-`/content` usando `wget` y `unzip`; no es necesario subir el dataset a Drive.
-Solo se guardan en Drive los resultados persistentes. Para validar el flujo usa
-`VIEW_LIMIT = 30`, `IMAGE_SIZE = (64, 64)`, `ITERATIONS = 1500` y una
-sola condición (`spc_025`). Después se puede ampliar a todas las vistas y más
-iteraciones.
+Para compilar las extensiones CUDA de 3DGS, ejecuta esto en `cmd`, no en PowerShell, desde la raíz del repo:
 
-El notebook grande [`notebook.ipynb`](notebook.ipynb) conserva el experimento
-completo anterior, incluyendo comparaciones 2D/3D. Los notebooks
-[`diagnostico_3dgs.ipynb`](diagnostico_3dgs.ipynb) y
-[`gaussian_splatting_colab.ipynb`](gaussian_splatting_colab.ipynb) se mantienen
-como material de diagnóstico/referencia.
-
-Uso sugerido:
-
-```text
-proyecto-final/
-├── informe.pdf
-├── presentacion.pdf
-└── notebook.ipynb
+```bat
+call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+set CUDA_HOME=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8
+set DISTUTILS_USE_SDK=1
+set CL=/DUSE_CUDA
+uv pip install --python .venv\Scripts\python.exe --no-build-isolation third_party\gaussian-splatting\submodules\simple-knn
+uv pip install --python .venv\Scripts\python.exe --no-build-isolation third_party\gaussian-splatting\submodules\diff-gaussian-rasterization
 ```
 
-El notebook disponible en [`notebook.ipynb`](notebook.ipynb) está preparado para Google Colab. Monta Drive, descomprime `tandt_db.zip` si es necesario, simula las mediciones de una Single Pixel Camera sobre la escena `truck` para los niveles 5%, 10%, 25% y 50%, genera además un baseline sin SPC y guarda una carpeta compatible con Gaussian Splatting por cada nivel. Las imágenes se reescalan a la resolución original para mantener compatibilidad con las poses COLMAP. También documenta que GPT no participa en la ejecución y muestra la RAM, GPU/VRAM, espacio, Python, PyTorch/CUDA y librerías disponibles en la VM. Las secciones OE4 y OE5 clonan el repositorio oficial de 3DGS, entrenan/renderizan/evalúan las cinco escenas y guardan la comparación 2D vs. 3D en `comparacion_2d_vs_3d.csv`. El notebook además sigue una vista de referencia fija y genera una tira final del caso de estudio desde la imagen original hasta el render 3D.
+`CL=/DUSE_CUDA` es necesario: sin esa definición, el build falla en una cabecera de torch con
+`compiled_autograd.h(1143): error C2872: 'std': ambiguous symbol`. Ver `docs/01_bitacora.md`.
 
-Si 3DGS no inicia, [`diagnostico_3dgs.ipynb`](diagnostico_3dgs.ipynb) comprueba CUDA, PyTorch, las extensiones compiladas, el formato COLMAP y ejecuta un entrenamiento de solo 10 iteraciones. El entrenamiento principal usa `--resolution 256` en modo piloto y `512` en modo completo para evitar que las imágenes reescaladas a su tamaño original agoten la VRAM.
+Los pesos de LPIPS-VGG (unos 530 MB) se descargan solos la primera vez, al caché de torch.
 
-La preparación 3D alinea también nombres como `01.jpg`, `000001.jpg` o `frame_000001.jpg` mediante su índice numérico final, de modo que las imágenes generadas para la demo mantengan las poses COLMAP correctas.
+## Ejecución
+
+Abre los notebooks con el kernel de `.venv` y ejecútalos en orden. Los parámetros están en la primera celda
+de código de cada uno. Las rutas son relativas a la raíz del repo.
+
+Sin abrir Jupyter, desde la raíz del repo:
+
+```powershell
+.venv\Scripts\python.exe -m papermill --cwd codes codes\01_spc_simulacion_reconstruccion.ipynb salida_01.ipynb -p NUM_VIEWS 32 -p RUN_NAME prueba
+.venv\Scripts\python.exe -m papermill --cwd codes codes\02_gaussian_splatting.ipynb salida_02.ipynb -p SPC_RUN prueba -p GS_RUN prueba
+```
+
+**Reanudación.** Volver a ejecutar un notebook con el mismo nombre de corrida omite lo terminado. Las
+corridas de 3DGS interrumpidas siguen desde su último checkpoint.
+
+## Salidas
+
+```text
+outputs/
+├── spc_runs/<escena>/<corrida>/
+│   ├── manifest.json               # contrato de datos para el Notebook 2
+│   ├── summary_2d.csv              # métricas 2D por condición
+│   ├── lambda_search.csv           # búsqueda de lambda para TV
+│   ├── estudio_*.csv               # estudios complementarios
+│   ├── control_resample/           # solo remuestreo, sin SPC
+│   └── <patrón>_r<ratio>/
+│       ├── config.json
+│       ├── measurements/*.npz      # códigos del sensor; las máscaras se regeneran desde la semilla
+│       └── <método>/
+│           ├── images/*.jpg        # mismos nombres que las poses COLMAP
+│           └── metrics_per_view.csv
+└── gs_runs/<escena>/<corrida>/
+    ├── run_config.json             # parámetros y fecha
+    ├── sanity_checks.csv
+    ├── resultados_3dgs.csv, .json
+    ├── baseline_vs_paper.csv
+    ├── propagacion_2d_3d.csv
+    ├── figures/
+    ├── logs/<condición>.log
+    ├── scenes/<condición>/         # images/ + sparse/0/
+    └── models/<condición>/
+        ├── metrics.json, run_status.json
+        ├── train_log.csv           # pérdida, gaussianas y VRAM cada 100 iteraciones
+        ├── gpu_log_*.csv           # temperatura, potencia y memoria
+        ├── per_view_<iter>.csv
+        ├── test_renders/iteration_<iter>/*.png
+        ├── point_cloud/iteration_<iter>/point_cloud.ply
+        └── chkpnt<iter>.pth        # checkpoint final
+```
+
+Las corridas previas en `outputs/spc_runs/spc_local/` y `outputs/proyecto_final_resultados/` se conservan sin cambios.

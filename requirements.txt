@@ -1,0 +1,21 @@
+# Dependencias Python del proyecto. Instalación completa en codes/README.md.
+#
+# PyTorch se instala aparte, porque la versión depende de la CUDA:
+#   uv pip install "torch==2.11.0+cu128" "torchvision==0.26.0+cu128" --index-url https://download.pytorch.org/whl/cu128
+#
+# diff_gaussian_rasterization y simple_knn son extensiones CUDA del repo de 3DGS:
+# se compilan desde sus submódulos, no desde PyPI.
+
+numpy
+scipy
+Pillow
+scikit-image
+matplotlib
+pandas
+tqdm
+psutil
+plyfile
+ipykernel
+papermill
+setuptools
+wheel

@@ -219,3 +219,20 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 slides/presentacion_files
+
+# Datos, resultados y dependencias externas (pesados, no versionar)
+data/
+outputs/
+third_party/
+
+# LaTeX: auxiliares de compilación
+latex/**/*.aux
+latex/**/*.fdb_latexmk
+latex/**/*.fls
+latex/**/*.synctex.gz
+latex/**/*.bbl
+latex/**/*.blg
+latex/**/*.out
+latex/**/*.toc
+latex/ejemplo_informe
+slides/slide_ejemplos
